@@ -1,0 +1,1714 @@
+/* Simple UI for Rental Management System */
+
+/* CSS Reset & Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: #0f0f0f;
+    background: linear-gradient(135deg, #b81a86 0%, #764ba2 100%);
+    min-height: 100vh;
+    position: center;
+    
+    display: flex;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.03)"/></pattern></defs><rect width="100%" height="100%" fill="url(%23grain)"/></svg>');
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* Container */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Header */
+.header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 40px 0;
+    margin-bottom: 40px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+.header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea 20%, #764ba2 60%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 10px;
+    font-weight: 700;
+}
+
+.header p {
+    color: #6c757d;
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+/* Cards */
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #667eea, #764ba2, #f093fb, #f5576c);
+    border-radius: 20px 20px 0 0;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* Table Input Styles */
+.table-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    background: rgba(218, 146, 146, 0.9);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.table-input:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.table-input:hover {
+    border-color: #667eea;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+}
+
+/* Fix for bill calculation display - prevent blur and ensure clarity */
+.data-table .cost,
+.data-table .room-bill-display,
+.data-table .units-used-display,
+.data-table .per-unit-cost-display {
+    font-weight: 700 !important;
+    color: #2c3e50 !important;
+    font-size: 15px !important;
+    text-shadow: none !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    -webkit-text-fill-color: unset !important;
+    background-clip: unset !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+}
+
+/* Specific styling for electricity bill amounts */
+.data-table .cost {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    font-weight: 800 !important;
+    font-size: 16px !important;
+    text-shadow: 0 2px 4px rgba(231, 76, 60, 0.3) !important;
+}
+
+/* Ensure money amounts are always clear and readable */
+.data-table td:contains("৳") {
+    font-family: 'Segoe UI', system-ui, sans-serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.5px !important;
+}
+
+.units-used-display,
+.per-unit-cost-display,
+.room-bill-display {
+    font-weight: 600;
+    color: #2c3e50;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    text-shadow: none !important;
+    backdrop-filter: none !important;
+    filter: none !important;
+}
+
+/* Enhanced table text clarity */
+table, .data-table, .rooms-table {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+table td, table th,
+.data-table td, .data-table th,
+.rooms-table td, .rooms-table th {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    background-color: #ffd700;
+    border:  2px dotted #83a9ce;
+    shape-outside: circle(100%);
+}
+
+/* Add Tenant Button Styling */
+.data-table .btn-link {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+}
+
+.data-table .btn-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+    color: #fed6e3;
+}
+
+/* Action Buttons in Table */
+.data-table .btn-sm {
+    margin: 2px;
+    padding: 6px 12px;
+    border-radius: 15px;
+    font-size: 11px;
+    min-width: 60px;
+}
+
+/* Money Amount Highlighting */
+.data-table td[data-currency] {
+    position: relative;
+}
+
+.data-table td[data-currency]::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 60%;
+    background: currentColor;
+    border-radius: 2px;
+    opacity: 0.3;
+}
+
+/* Status Indicators */
+.status-paid {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.status-overdue {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    animation: pulse 2s infinite;
+}
+
+/* Property Grid */
+.properties-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.property-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    transition: box-shadow 0.2s ease;
+}
+
+.property-card:hover {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.property-card h3 {
+    color: #2c3e50;
+    margin-bottom: 12px;
+    font-size: 1.25rem;
+}
+
+.property-card p {
+    color: #666;
+    margin-bottom: 16px;
+}
+
+/* Summary Cards */
+.summary-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+    margin-bottom: 40px;
+}
+
+.summary-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 30px 25px;
+    border-radius: 20px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.summary-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.summary-card:nth-child(2)::before {
+    background: linear-gradient(90deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.summary-card:nth-child(3)::before {
+    background: linear-gradient(90deg, #fa709a 0%, #fee140 100%);
+}
+
+.summary-card:nth-child(4)::before {
+    background: linear-gradient(90deg, #a8edea 0%, #fed6e3 100%);
+}
+
+.summary-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+}
+
+.summary-icon {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.summary-card h3 {
+    font-size: 2.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.summary-card p {
+    color: #6c757d;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.btn:hover::before {
+    left: 100%;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+}
+
+.btn-primary:hover {
+    box-shadow: 0 12px 35px rgba(79, 172, 254, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    box-shadow: 0 8px 25px rgba(67, 233, 123, 0.3);
+}
+
+.btn-success:hover {
+    box-shadow: 0 12px 35px rgba(67, 233, 123, 0.4);
+}
+
+.btn-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    box-shadow: 0 8px 25px rgba(250, 112, 154, 0.3);
+}
+
+.btn-warning:hover {
+    box-shadow: 0 12px 35px rgba(250, 112, 154, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+    box-shadow: 0 8px 25px rgba(255, 107, 107, 0.3);
+}
+
+.btn-danger:hover {
+    box-shadow: 0 12px 35px rgba(255, 107, 107, 0.4);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #2c3e50;
+    box-shadow: 0 8px 25px rgba(168, 237, 234, 0.3);
+}
+
+.btn-secondary:hover {
+    box-shadow: 0 12px 35px rgba(168, 237, 234, 0.4);
+}
+
+.btn-info {
+    background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+    box-shadow: 0 8px 25px rgba(116, 185, 255, 0.3);
+}
+
+.btn-info:hover {
+    box-shadow: 0 12px 35px rgba(116, 185, 255, 0.4);
+}
+
+.btn-sm {
+    padding: 10px 20px;
+    font-size: 12px;
+}
+
+/* Forms */
+.form-group {
+    margin-bottom: 25px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 16px 20px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: #2c3e50;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+    transform: translateY(-2px);
+}
+
+.form-control::placeholder {
+    color: #a0a0a0;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.form-actions {
+    margin-top: 30px;
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+/* Tables */
+.table-container {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.95) 100%);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 3px solid rgba(67, 233, 123, 0.3);
+    margin-bottom: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+}
+
+.data-table th {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+    color: white;
+    padding: 20px 16px;
+    text-align: left;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    position: relative;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.data-table th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b, #d97706);
+}
+
+.data-table td {
+    padding: 18px 16px;
+    border-bottom: 2px solid rgba(229, 231, 235, 0.8);
+    color: #1f2937;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.data-table tbody tr {
+    transition: all 0.3s ease;
+    position: relative;
+    border: 1px solid rgba(229, 231, 235, 0.3);
+}
+
+/* Alternating Row Colors */
+.data-table tbody tr:nth-child(odd) {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border-left: 4px solid #10b981;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 51, 234, 0.08) 100%);
+    border-left: 4px solid #3b82f6;
+}
+
+.data-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.2) 0%, rgba(245, 158, 11, 0.2) 100%);
+    transform: scale(1.02);
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+    border-left: 4px solid #f59e0b;
+}
+
+/* Colored Table Headers */
+.data-table th:nth-child(1) { /* Room Number */
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+}
+
+.data-table th:nth-child(2) { /* Room Rent */
+    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+}
+
+.data-table th:nth-child(3) { /* Current Bill */
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%);
+}
+
+.data-table th:nth-child(4) { /* Water Bill */
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%);
+}
+
+.data-table th:nth-child(5) { /* Dust Collection */
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+}
+
+.data-table th:nth-child(6) { /* Total */
+    background: linear-gradient(135deg, #06b6d4 0%, #0891b2 50%, #0e7490 100%);
+}
+
+.data-table th:nth-child(7) { /* Tenant */
+    background: linear-gradient(135deg, #ec4899 0%, #db2777 50%, #be185d 100%);
+}
+
+.data-table th:nth-child(8) { /* Actions */
+    background: linear-gradient(135deg, #6b7280 0%, #4b5563 50%, #374151 100%);
+}
+
+/* Colored Table Data Based on Content */
+.data-table td:nth-child(1) { /* Room Number */
+    font-weight: 700;
+    color: #dc2626;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(220, 38, 38, 0.3);
+}
+
+.data-table td:nth-child(2) { /* Room Rent */
+    font-weight: 600;
+    color: #059669;
+    text-shadow: 0 1px 2px rgba(5, 150, 105, 0.3);
+}
+
+.data-table td:nth-child(3) { /* Current Bill */
+    font-weight: 600;
+    color: #d97706;
+    text-shadow: 0 1px 2px rgba(217, 119, 6, 0.3);
+}
+
+.data-table td:nth-child(4) { /* Water Bill */
+    font-weight: 600;
+    color: #2563eb;
+    text-shadow: 0 1px 2px rgba(37, 99, 235, 0.3);
+}
+
+.data-table td:nth-child(5) { /* Dust Collection */
+    font-weight: 600;
+    color: #7c3aed;
+    text-shadow: 0 1px 2px rgba(124, 58, 237, 0.3);
+}
+
+.data-table td:nth-child(6) { /* Total */
+    font-weight: 700;
+    color: #0891b2;
+    background: rgba(6, 182, 212, 0.1);
+    border-radius: 8px;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(8, 145, 178, 0.3);
+}
+
+.data-table td:nth-child(7) { /* Tenant */
+    font-weight: 600;
+    color: #db2777;
+    text-shadow: 0 1px 2px rgba(219, 39, 119, 0.3);
+}
+
+/* Special Styling for Total Row */
+.data-table tbody tr:last-child {
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.3) 0%, rgba(245, 158, 11, 0.3) 100%);
+    border: 3px solid #f59e0b;
+    border-radius: 10px;
+    font-weight: 700;
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+}
+
+.data-table tbody tr:last-child td {
+    font-size: 16px;
+    color: #92400e;
+    padding: 22px 16px;
+    font-weight: 800;
+    text-shadow: 0 1px 3px rgba(146, 64, 14, 0.3);
+}
+
+.data-table tbody tr:last-child td:first-child {
+    color: #92400e;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* Empty Row Styling */
+.data-table tbody tr td:contains("৳0") {
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* Monetary Values Styling */
+.data-table td:contains("৳") {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+}
+
+/* Section Headers */
+.section-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+}
+
+.section-header::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 2px;
+}
+
+.section-header h2 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 1.8rem;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.section-header p {
+    color: rgba(44, 62, 80, 0.7);
+    margin: 0;
+    font-weight: 500;
+}
+
+.table-section {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border-radius: 25px;
+    padding: 35px;
+    margin-bottom: 35px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+/* Modals */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #999;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #666;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+/* Alerts */
+.alert {
+    padding: 20px 25px;
+    border-radius: 15px;
+    margin-bottom: 25px;
+    border-left: 5px solid;
+    backdrop-filter: blur(15px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+}
+
+.alert::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    animation: alertShimmer 2s infinite;
+}
+
+@keyframes alertShimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+.alert-success {
+    background: rgba(212, 237, 218, 0.9);
+    color: #155724;
+    border-left-color: #43e97b;
+}
+
+.alert-error {
+    background: rgba(248, 215, 218, 0.9);
+    color: #721c24;
+    border-left-color: #ff6b6b;
+}
+
+.alert-warning {
+    background: rgba(255, 243, 205, 0.9);
+    color: #856404;
+    border-left-color: #fa709a;
+}
+
+.alert-info {
+    background: rgba(209, 236, 241, 0.9);
+    color: #0c5460;
+    border-left-color: #4facfe;
+}
+
+/* Electricity Management Specific */
+.sub-meter-field-group {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(15px);
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sub-meter-field-group::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+}
+
+.sub-meter-field-group:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+    border-color: #667eea;
+}
+
+.room-header {
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(67, 233, 123, 0.3);
+}
+
+/* No Data States */
+.no-data {
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    padding: 40px 20px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #999;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 16px;
+    color: #ccc;
+}
+
+.empty-state h3 {
+    margin-bottom: 8px;
+    color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+    }
+    
+    .properties-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 8px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 20px;
+    }
+    
+    .data-table {
+        font-size: 14px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 12px 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.25rem;
+    }
+}
+
+/* Utility Classes */
+.text-center {
+    text-align: center;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.mb-0 {
+    margin-bottom: 0;
+}
+
+.mb-1 {
+    margin-bottom: 8px;
+}
+
+.mb-2 {
+    margin-bottom: 16px;
+}
+
+.mb-3 {
+    margin-bottom: 24px;
+}
+
+.mt-0 {
+    margin-top: 0;
+}
+
+.mt-1 {
+    margin-top: 8px;
+}
+
+.mt-2 {
+    margin-top: 16px;
+}
+
+.mt-3 {
+    margin-top: 24px;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.gap-1 {
+    gap: 8px;
+}
+
+.gap-2 {
+    gap: 16px;
+}
+
+/* Beautiful Loading Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+@keyframes tableRowSlide {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes moneyGlow {
+    0%, 100% {
+        text-shadow: 0 0 5px currentColor;
+    }
+    50% {
+        text-shadow: 0 0 15px currentColor, 0 0 25px currentColor;
+    }
+}
+
+/* Table Row Animation */
+.data-table tbody tr {
+    animation: tableRowSlide 0.5s ease forwards;
+}
+
+.data-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+.data-table tbody tr:nth-child(2) { animation-delay: 0.15s; }
+.data-table tbody tr:nth-child(3) { animation-delay: 0.2s; }
+.data-table tbody tr:nth-child(4) { animation-delay: 0.25s; }
+.data-table tbody tr:nth-child(5) { animation-delay: 0.3s; }
+.data-table tbody tr:nth-child(6) { animation-delay: 0.35s; }
+.data-table tbody tr:nth-child(7) { animation-delay: 0.4s; }
+.data-table tbody tr:nth-child(8) { animation-delay: 0.45s; }
+.data-table tbody tr:nth-child(9) { animation-delay: 0.5s; }
+.data-table tbody tr:nth-child(10) { animation-delay: 0.55s; }
+
+/* Money Amount Special Effects */
+.data-table td:contains("৳") {
+    animation: moneyGlow 3s ease-in-out infinite;
+}
+
+/* Table Border Glow Effect */
+.table-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, #667eea, #764ba2, #43e97b, #38f9d7, #4facfe, #00f2fe);
+    border-radius: 22px;
+    z-index: -1;
+    animation: borderGlow 4s ease-in-out infinite;
+    opacity: 0.3;
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        filter: hue-rotate(0deg);
+    }
+    50% {
+        filter: hue-rotate(180deg);
+    }
+}
+
+/* Header Icon Effects */
+.data-table th::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.1) 50%, transparent 70%);
+    transform: translateX(-100%);
+    transition: transform 0.6s;
+}
+
+.data-table th:hover::before {
+    transform: translateX(100%);
+}
+
+/* Page Load Animation */
+.container > * {
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.container > *:nth-child(1) { animation-delay: 0.1s; }
+.container > *:nth-child(2) { animation-delay: 0.2s; }
+.container > *:nth-child(3) { animation-delay: 0.3s; }
+.container > *:nth-child(4) { animation-delay: 0.4s; }
+.container > *:nth-child(5) { animation-delay: 0.5s; }
+
+/* Floating Elements */
+.summary-card:nth-child(1) {
+    animation: float 6s ease-in-out infinite;
+}
+
+.summary-card:nth-child(2) {
+    animation: float 6s ease-in-out infinite 1s;
+}
+
+.summary-card:nth-child(3) {
+    animation: float 6s ease-in-out infinite 2s;
+}
+
+.summary-card:nth-child(4) {
+    animation: float 6s ease-in-out infinite 3s;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
+/* Focus Styles */
+*:focus {
+    outline: 2px solid rgba(102, 126, 234, 0.5);
+    outline-offset: 2px;
+}
+
+/* Selection Styles */
+::selection {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+/* Data Management Section Styles */
+.data-management {
+    margin-top: 20px;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.management-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
+
+.management-actions .btn {
+    min-width: 150px;
+    padding: 12px 20px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.management-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.management-actions .btn-info {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    border: none;
+}
+
+.management-actions .btn-warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+.management-actions .btn-danger {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border: none;
+}
+
+.management-actions .btn-primary {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+}
+
+.management-actions .btn-success {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border: none;
+}
+
+/* File Input Styling */
+.management-actions input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* Alert Styling */
+.alert-message {
+    padding: 15px 20px;
+    margin: 10px 0;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 500;
+    animation: slideDown 0.3s ease;
+    position: relative;
+}
+
+.alert-message.alert-success {
+    background: linear-gradient(135deg, rgba(39, 174, 96, 0.1), rgba(46, 204, 113, 0.1));
+    border: 1px solid rgba(39, 174, 96, 0.3);
+    color: #27ae60;
+}
+
+.alert-message.alert-error {
+    background: linear-gradient(135deg, rgba(231, 76, 60, 0.1), rgba(192, 57, 43, 0.1));
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    color: #e74c3c;
+}
+
+.alert-message.alert-info {
+    background: linear-gradient(135deg, rgba(52, 152, 219, 0.1), rgba(41, 128, 185, 0.1));
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    color: #3498db;
+}
+
+.alert-close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    padding: 5px;
+    margin-left: auto;
+    border-radius: 5px;
+    transition: all 0.2s ease;
+}
+
+.alert-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Electricity Management Section Styles */
+.electricity-management-section {
+    animation: slideDown 0.3s ease;
+}
+
+.electricity-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.sub-meter-config {
+    margin-top: 20px;
+}
+
+.sub-meter-field-group {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sub-meter-field-group h4 {
+    color: #667eea;
+    margin-bottom: 15px;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(102, 126, 234, 0.2);
+    padding-bottom: 8px;
+}
+
+.sub-meter-fields {
+    display: grid;
+    gap: 20px;
+}
+
+.calculation-table {
+    font-size: 14px;
+}
+
+.calculation-table td,
+.calculation-table th {
+    padding: 12px 8px;
+    text-align: center;
+}
+
+.calculation-table .no-data {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px;
+}
+
+.badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* Form Controls for Electricity Management */
+.electricity-management-section .form-control {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.electricity-management-section .form-control:focus {
+    outline: none;
+    border-color: #667eea;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+    transform: translateY(-1px);
+}
+
+.electricity-management-section .form-control:hover {
+    border-color: #667eea;
+    box-shadow: 0 3px 10px rgba(102, 126, 234, 0.1);
+}
+
+.electricity-management-section .form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.electricity-management-section .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.electricity-management-section .form-group label {
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #db8400;
+}
+
+.electricity-management-section .form-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+    flex-wrap: wrap;
+}
+
+.electricity-management-section .table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.electricity-management-section .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.electricity-management-section .data-table th {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 12px;
+    text-align: left;
+    font-weight: 600;
+    border: none;
+}
+
+.electricity-management-section .data-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    background: white;
+}
+
+.electricity-management-section .data-table tr:hover td {
+    background: #b8c1f1;
+}
+
+/* Responsive Design for Electricity Management */
+@media (max-width: 768px) {
+    .electricity-actions {
+        justify-content: center;
+    }
+    
+    .electricity-management-section .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .sub-meter-field-group .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .electricity-management-section .form-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Electricity Bill Integration Styles */
+.electricity-bill-cell {
+    background: linear-gradient(135deg, #ff6b35 0%, #f7931e 50%, #ffd700 100%) !important;
+    color: white !important;
+    font-weight: bold;
+    position: relative;
+    animation: electricityGlow 2s ease-in-out infinite alternate;
+    border: 2px solid #ffd700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.electricity-icon {
+    margin-left: 8px;
+    color: #fff700;
+    font-size: 14px;
+    animation: electricitySpark 1s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.8));
+    text-shadow: 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+@keyframes electricityGlow {
+    0% {
+        box-shadow: 0 0 15px rgba(255, 215, 0, 0.5), inset 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    100% {
+        box-shadow: 0 0 25px rgba(255, 107, 53, 0.8), inset 0 0 20px rgba(255, 255, 255, 0.4);
+    }
+}
+
+@keyframes electricitySpark {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 0.9;
+        text-shadow: 0 0 8px rgba(255, 255, 255, 1);
+    }
+}
+
+.electricity-bill-cell::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.3) 50%, transparent 70%);
+    animation: electricityShimmer 2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes electricityShimmer {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.electricity-bill-cell:hover {
+    transform: scale(1.05);
+    transition: transform 0.2s ease;
+    box-shadow: 0 0 30px rgba(255, 107, 53, 1), inset 0 0 25px rgba(255, 255, 255, 0.5);
+}
+
+/* Status badges for tenant details */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+.status-active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.status-inactive {
+    background-color: #f44336;
+    color: white;
+}
+
+.status-pending {
+    background-color: #ff9800;
+    color: white;
+}
+
+/* Enhanced tenant details modal styling */
+.tenant-info-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tenant-info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.tenant-info-card h4 {
+    color: #495057;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.tenant-info-card .info-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding: 5px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.tenant-info-card .info-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+}
+
+.tenant-info-card .info-label {
+    font-weight: 600;
+    color: #6c757d;
+    flex: 0 0 40%;
+}
+
+.tenant-info-card .info-value {
+    color: #495057;
+    flex: 1;
+    text-align: right;
+}
+
+/* Special styling for the NID card */
+.tenant-info-card:last-of-type {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border-color: #ffc107;
+}
+
+.tenant-info-card:last-of-type h4 {
+    color: #856404;
+    border-color: #ffc107;
+}

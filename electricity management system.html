@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electricity Bill Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-bolt"></i> Electricity Bill Management System</h1>
+            <p>Main Meter with Sub-Meter Distribution System</p>
+        </header>
+
+        <!-- Alert Container -->
+        <div id="alertContainer" class="alert-container"></div>
+
+        <!-- Summary Cards -->
+        <div class="summary-cards">
+            <div class="summary-card">
+                <div class="summary-icon"><i class="fas fa-plug"></i></div>
+                <div class="summary-content">
+                    <h3 id="totalMainMeters">0</h3>
+                    <p>Main Meters</p>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon"><i class="fas fa-home"></i></div>
+                <div class="summary-content">
+                    <h3 id="totalSubMeters">0</h3>
+                    <p>Sub Meters (Rooms)</p>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon"><i class="fas fa-calculator"></i></div>
+                <div class="summary-content">
+                    <h3 id="totalUnitsUsed">0</h3>
+                    <p>Total Units</p>
+                </div>
+            </div>
+            <div class="summary-card">
+                <div class="summary-icon"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="summary-content">
+                    <h3 id="totalBillAmount">৳0</h3>
+                    <p>Total Bill</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table 1: Main Meter Input -->
+        <section class="table-section">
+            <div class="section-header">
+                <h2><i class="fas fa-plus-circle"></i> Table 1: Main Meter Bill Input</h2>
+                <p>Enter your main meter details and total payable amount</p>
+            </div>
+
+            <div class="input-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="meterOwnerName">Meter Owner Name</label>
+                        <input type="text" id="meterOwnerName" class="form-control" placeholder="Enter owner name">
+                    </div>
+                    <div class="form-group">
+                        <label for="meterNumber">Meter Number</label>
+                        <input type="text" id="meterNumber" class="form-control" placeholder="Enter meter number">
+                    </div>
+                    <div class="form-group">
+                        <label for="meterCodeName">Code Name</label>
+                        <input type="text" id="meterCodeName" class="form-control" placeholder="Enter code name">
+                    </div>
+                    <div class="form-group">
+                        <label for="payableTaka">Payable Taka (৳)</label>
+                        <input type="number" id="payableTaka" class="form-control" placeholder="Enter total bill amount"
+                            min="0" step="0.01">
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button id="addMainMeterBtn" type="button" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add Main Meter
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table id="mainMeterTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Meter Owner Name</th>
+                            <th>Meter Number</th>
+                            <th>Code Name</th>
+                            <th>Payable Taka (৳)</th>
+                            <th>Sub Meters</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="6" class="no-data">No main meters added yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Sub Meter Configuration -->
+        <section class="table-section">
+            <div class="section-header">
+                <h2><i class="fas fa-cogs"></i> Sub Meter Configuration</h2>
+                <p>Configure rooms/sub-meters for the selected main meter</p>
+            </div>
+
+            <div class="sub-meter-config">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="selectedMainMeter">Select Main Meter</label>
+                        <select id="selectedMainMeter" class="form-control">
+                            <option value="">Select a main meter</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="numberOfRooms">How many rooms use this meter?</label>
+                        <input type="number" id="numberOfRooms" class="form-control" placeholder="Enter number of rooms"
+                            min="1" max="20">
+                    </div>
+                    <div class="form-group">
+                        <button onclick="generateSubMeterFields()" class="btn btn-secondary">
+                            <i class="fas fa-list"></i> Generate Room Fields
+                        </button>
+                    </div>
+                </div>
+
+                <div id="subMeterFieldsContainer" class="sub-meter-fields"></div>
+
+                <div id="saveSubMeterContainer" class="form-actions" style="display: none;">
+                    <button onclick="saveSubMeterConfiguration()" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Sub Meter Configuration
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Table 2: Calculation Table -->
+        <section class="table-section">
+            <div class="section-header">
+                <h2><i class="fas fa-calculator"></i> Table 2: Bill Calculation & Distribution</h2>
+                <p>Automatic calculation and distribution of electricity bills</p>
+            </div>
+
+            <div class="table-container">
+                <table id="calculationTable" class="data-table calculation-table">
+                    <thead>
+                        <tr>
+                            <th>Meter Owner</th>
+                            <th>Total Bill (৳)</th>
+                            <th>Meter Code</th>
+                            <th>Room No</th>
+                            <th>Current Unit</th>
+                            <th>Previous Unit</th>
+                            <th>Units Used</th>
+                            <th>Per Unit Cost (৳)</th>
+                            <th>Room Bill (৳)</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="10" class="no-data">No calculation data available</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Data Management -->
+        <section class="table-section">
+            <div class="section-header">
+                <h2><i class="fas fa-database"></i> Data Management</h2>
+                <p>Export, import, and manage your electricity data</p>
+            </div>
+
+            <div class="data-management">
+                <div class="management-actions">
+                    <button onclick="exportElectricityData()" class="btn btn-info">
+                        <i class="fas fa-download"></i> Export Data
+                    </button>
+                    <button onclick="document.getElementById('importFile').click()" class="btn btn-warning">
+                        <i class="fas fa-upload"></i> Import Data
+                    </button>
+                    <input type="file" id="importFile" accept=".json" style="display: none;"
+                        onchange="importElectricityData(event)">
+                    <button onclick="clearAllElectricityData()" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Clear All Data
+                    </button>
+                    <button onclick="linkToIndexPage()" class="btn btn-primary">
+                        <i class="fas fa-sync"></i> Update Index Page Bills
+                    </button>
+                    <button onclick="window.open('index.html', '_blank')" class="btn btn-success">
+                        <i class="fas fa-external-link-alt"></i> Go to Main Dashboard
+                    </button>
+                    <button onclick="testElectricityBillData()" class="btn btn-secondary" style="margin-top: 10px;">
+                        <i class="fas fa-bug"></i> Test Data (Debug)
+                    </button>
+                    <button onclick="debugRoomMatching()" class="btn btn-info" style="margin-top: 10px;">
+                        <i class="fas fa-search"></i> Debug Room Matching
+                    </button>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="electricity-script-optimized.js"></script>
+    <script src="theme-toggle.js"></script>
+</body>
+
+</html>

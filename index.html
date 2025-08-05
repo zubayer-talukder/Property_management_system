@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="header-content">
+                <div class="header-left">
+                    <h1><i class="fas fa-building"></i> Property Management System</h1>
+                    <p>Manage your rental properties efficiently</p>
+                </div>
+                <div class="header-right">
+                    <button class="btn btn-secondary" onclick="propertyManager.forceUpdateElectricityBills()">
+                        <i class="fas fa-sync"></i> Refresh Bills
+                    </button>
+                    <button class="btn btn-warning" onclick="showElectricityManagement()">
+                        <i class="fas fa-bolt"></i> Electricity Management
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Properties List Section -->
+            <section class="properties-section" id="propertiesSection">
+                <div class="section-header">
+                    <h2><i class="fas fa-home"></i> My Properties</h2>
+                    <button class="btn btn-primary" id="addPropertyBtn">
+                        <i class="fas fa-plus"></i> Add Property
+                    </button>
+                </div>
+
+                <div class="properties-grid" id="propertiesGrid">
+                    <!-- Properties will be dynamically added here -->
+                </div>
+
+                <div class="empty-state" id="emptyState">
+                    <i class="fas fa-home"></i>
+                    <h3>No Properties Yet</h3>
+                    <p>Start by adding your first property</p>
+                    <button class="btn btn-primary" onclick="showAddPropertyModal()">
+                        <i class="fas fa-plus"></i> Add Your First Property
+                    </button>
+                </div>
+            </section>
+
+            <!-- Property Details Section -->
+            <section class="property-details-section" id="propertyDetailsSection" style="display: none;">
+                <div class="section-header">
+                    <button class="btn btn-secondary" id="backToPropertiesBtn">
+                        <i class="fas fa-arrow-left"></i> Back to Properties
+                    </button>
+                    <h2 id="propertyDetailsTitle">Property Details</h2>
+                    <div class="property-actions">
+                        <button class="btn btn-success" id="addRoomBtn">
+                            <i class="fas fa-plus"></i> Add Room
+                        </button>
+                        <button class="btn btn-warning" id="editPropertyBtn">
+                            <i class="fas fa-edit"></i> Edit Property
+                        </button>
+                        <button class="btn btn-danger" id="deletePropertyDirectBtn">
+                            <i class="fas fa-trash"></i> Delete Property
+                        </button>
+                    </div>
+                </div>
+
+                <div class="property-summary">
+                    <div class="summary-cards">
+                        <div class="summary-card">
+                            <div class="card-icon">
+                                <i class="fas fa-door-open"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3 id="totalRooms">0</h3>
+                                <p>Total Rooms</p>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">
+                                <i class="fas fa-money-bill"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3 id="totalRent">৳0</h3>
+                                <p>Total Rent</p>
+                            </div>
+                        </div>
+                        <div class="summary-card">
+                            <div class="card-icon">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div class="card-content">
+                                <h3 id="totalIncome">৳0</h3>
+                                <p>Total Monthly Income</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="rooms-table-container">
+                    <table class="rooms-table" id="roomsTable">
+                        <thead>
+                            <tr>
+                                <th>Room Number</th>
+                                <th>Room Rent (৳)</th>
+                                <th>Current Bill (৳)</th>
+                                <th>Water Bill (৳)</th>
+                                <th>Dust Collection (৳)</th>
+                                <th>Total (৳)</th>
+                                <th>Tenant</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roomsTableBody">
+                            <!-- Rooms will be dynamically added here -->
+                        </tbody>
+                        <tfoot>
+                            <tr class="total-row">
+                                <th>Total</th>
+                                <th id="totalRentFooter">৳0</th>
+                                <th id="totalCurrentFooter">৳0</th>
+                                <th id="totalWaterFooter">৳0</th>
+                                <th id="totalDustFooter">৳0</th>
+                                <th id="totalIncomeFooter">৳0</th>
+                                <th></th>
+                                <th></th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Tenant Details Section -->
+            <section class="tenant-details-section" id="tenantDetailsSection" style="display: none;">
+                <div class="section-header">
+                    <button class="btn btn-secondary" id="backToPropertyBtn">
+                        <i class="fas fa-arrow-left"></i> Back to Property
+                    </button>
+                    <h2 id="tenantDetailsTitle">Tenant Details - Room <span id="tenantRoomNumber"></span></h2>
+                    <div class="tenant-actions">
+                        <button class="btn btn-success" id="addTenantBtn">
+                            <i class="fas fa-user-plus"></i> Add Tenant
+                        </button>
+                        <button class="btn btn-warning" id="editTenantBtn" style="display: none;">
+                            <i class="fas fa-user-edit"></i> Edit Tenant
+                        </button>
+                        <button class="btn btn-danger" id="deleteTenantBtn" style="display: none;">
+                            <i class="fas fa-user-times"></i> Remove Tenant
+                        </button>
+                    </div>
+                </div>
+
+                <div class="tenant-info-container" id="tenantInfoContainer">
+                    <!-- Tenant information will be displayed here -->
+                </div>
+
+                <div class="empty-tenant-state" id="emptyTenantState">
+                    <i class="fas fa-user-slash"></i>
+                    <h3>No Tenant Assigned</h3>
+                    <p>This room is currently vacant</p>
+                    <button class="btn btn-primary" onclick="propertyManager.showAddTenantModal()">
+                        <i class="fas fa-user-plus"></i> Add Tenant
+                    </button>
+                </div>
+            </section>
+
+            <!-- Electricity Management Section -->
+            <section class="electricity-management-section" id="electricityManagementSection" style="display: none;">
+                <div class="section-header">
+                    <button class="btn btn-secondary" id="backFromElectricityBtn">
+                        <i class="fas fa-arrow-left"></i> Back to Properties
+                    </button>
+                    <h2><i class="fas fa-bolt"></i> Electricity Bill Management</h2>
+                    <div class="electricity-actions">
+                        <button class="btn btn-info" onclick="electricityManager.exportData()">
+                            <i class="fas fa-download"></i> Export Data
+                        </button>
+                        <button class="btn btn-warning" onclick="document.getElementById('importFile').click()">
+                            <i class="fas fa-upload"></i> Import Data
+                        </button>
+                        <input type="file" id="importFile" accept=".json" style="display: none;"
+                            onchange="electricityManager.importData(event)">
+                        <button class="btn btn-danger" onclick="electricityManager.clearAllData()">
+                            <i class="fas fa-trash"></i> Clear All Data
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Electricity Summary Cards -->
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-plug"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalMainMeters">0</h3>
+                            <p>Main Meters</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalSubMeters">0</h3>
+                            <p>Sub Meters (Rooms)</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-calculator"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalUnitsUsed">0</h3>
+                            <p>Total Units</p>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="card-icon">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3 id="totalBillAmount">৳0</h3>
+                            <p>Total Bill</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Meter Input Section -->
+                <div class="card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-plus-circle"></i> Main Meter Bill Input</h3>
+                        <p>Enter your main meter details and total payable amount</p>
+                    </div>
+
+                    <div class="input-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="meterOwnerName">Meter Owner Name</label>
+                                <input type="text" id="meterOwnerName" class="form-control"
+                                    placeholder="Enter owner name">
+                            </div>
+                            <div class="form-group">
+                                <label for="meterNumber">Meter Number</label>
+                                <input type="text" id="meterNumber" class="form-control"
+                                    placeholder="Enter meter number">
+                            </div>
+                            <div class="form-group">
+                                <label for="meterCodeName">Code Name</label>
+                                <input type="text" id="meterCodeName" class="form-control"
+                                    placeholder="Enter code name">
+                            </div>
+                            <div class="form-group">
+                                <label for="payableTaka">Payable Taka (৳)</label>
+                                <input type="number" id="payableTaka" class="form-control"
+                                    placeholder="Enter total bill amount" min="0" step="0.01">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button id="addMainMeterBtn" type="button" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add Main Meter
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="mainMeterTable" class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Owner Name</th>
+                                    <th>Meter Number</th>
+                                    <th>Code Name</th>
+                                    <th>Payable Amount (৳)</th>
+                                    <th>Sub Meters</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="no-data">No main meters available</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Sub Meter Configuration Section -->
+                <div class="card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-cogs"></i> Sub Meter Configuration</h3>
+                        <p>Configure rooms/sub-meters for the selected main meter</p>
+                    </div>
+
+                    <div class="sub-meter-config">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="selectedMainMeter">Select Main Meter</label>
+                                <select id="selectedMainMeter" class="form-control">
+                                    <option value="">Select a Main Meter</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="numberOfRooms">How many rooms use this meter?</label>
+                                <input type="number" id="numberOfRooms" class="form-control"
+                                    placeholder="Enter number of rooms" min="1" max="20">
+                            </div>
+                            <div class="form-group">
+                                <button onclick="electricityManager.generateSubMeterFields()" class="btn btn-secondary">
+                                    <i class="fas fa-cogs"></i> Generate Room Fields
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="subMeterFieldsContainer" class="sub-meter-fields"></div>
+
+                        <div id="saveSubMeterContainer" class="form-actions" style="display: none;">
+                            <button onclick="electricityManager.saveSubMeterConfiguration()" class="btn btn-success">
+                                <i class="fas fa-save"></i> Save Sub Meter Configuration
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calculation Table Section -->
+                <div class="card">
+                    <div class="section-header">
+                        <h3><i class="fas fa-calculator"></i> Bill Calculation & Distribution</h3>
+                        <p>Automatic calculation and distribution of electricity bills</p>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="calculationTable" class="data-table calculation-table">
+                            <thead>
+                                <tr>
+                                    <th>Owner Name</th>
+                                    <th>Payable (৳)</th>
+                                    <th>Code Name</th>
+                                    <th>Room</th>
+                                    <th>Current Unit</th>
+                                    <th>Previous Unit</th>
+                                    <th>Units Used</th>
+                                    <th>Per Unit Cost (৳)</th>
+                                    <th>Room Bill (৳)</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="10" class="no-data">No calculation data available</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Add Property Modal -->
+    <div class="modal" id="addPropertyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-home"></i> Add New Property</h3>
+                <button class="modal-close" onclick="closeModal('addPropertyModal')">&times;</button>
+            </div>
+            <form id="addPropertyForm">
+                <div class="form-group">
+                    <label for="propertyName">Property Name *</label>
+                    <input type="text" id="propertyName" required placeholder="Enter property name">
+                </div>
+                <div class="form-group">
+                    <label for="propertyAddress">Property Address</label>
+                    <textarea id="propertyAddress" placeholder="Enter property address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="roomCount">Number of Rooms/Units *</label>
+                    <input type="number" id="roomCount" min="1" max="100" required placeholder="Enter number of rooms">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('addPropertyModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Property</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Property Modal -->
+    <div class="modal" id="editPropertyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Property</h3>
+                <button class="modal-close" onclick="closeModal('editPropertyModal')">&times;</button>
+            </div>
+            <form id="editPropertyForm">
+                <div class="form-group">
+                    <label for="editPropertyName">Property Name *</label>
+                    <input type="text" id="editPropertyName" required>
+                </div>
+                <div class="form-group">
+                    <label for="editPropertyAddress">Property Address</label>
+                    <textarea id="editPropertyAddress"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary"
+                        onclick="closeModal('editPropertyModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Property</button>
+                    <button type="button" class="btn btn-danger" id="deletePropertyBtn">
+                        <i class="fas fa-trash"></i> Delete Property
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add/Edit Room Modal -->
+    <div class="modal" id="roomModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="roomModalTitle"><i class="fas fa-door-open"></i> Add Room</h3>
+                <button class="modal-close" onclick="closeModal('roomModal')">&times;</button>
+            </div>
+            <form id="roomForm">
+                <div class="form-group">
+                    <label for="roomNumber">Room Number *</label>
+                    <input type="text" id="roomNumber" required placeholder="e.g., 201, A1, etc.">
+                </div>
+                <div class="form-group">
+                    <label for="roomRent">Room Rent (৳) *</label>
+                    <input type="number" id="roomRent" min="0" step="0.01" required placeholder="Enter monthly rent">
+                </div>
+                <div class="form-group">
+                    <label for="currentBill">Current Bill (৳)</label>
+                    <input type="number" id="currentBill" min="0" step="0.01" value="0"
+                        placeholder="Enter current bill amount">
+                </div>
+                <div class="form-group">
+                    <label for="waterBill">Water Bill (৳)</label>
+                    <input type="number" id="waterBill" min="0" step="0.01" value="0"
+                        placeholder="Enter water bill amount">
+                </div>
+                <div class="form-group">
+                    <label for="dustCollection">Dust Collection (৳)</label>
+                    <input type="number" id="dustCollection" min="0" step="0.01" value="0"
+                        placeholder="Enter dust collection fee">
+                </div>
+                <div class="form-group">
+                    <label for="totalAmount">Total Amount (৳)</label>
+                    <input type="number" id="totalAmount" readonly placeholder="Auto-calculated">
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('roomModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="roomSubmitBtn">Add Room</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle"></i> Confirm Action</h3>
+                <button class="modal-close" onclick="closeModal('confirmModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to perform this action?</p>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('confirmModal')">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Tenant Modal -->
+    <div class="modal" id="tenantModal">
+        <div class="modal-content tenant-modal">
+            <div class="modal-header">
+                <h3 id="tenantModalTitle"><i class="fas fa-user-plus"></i> Add Tenant</h3>
+                <button class="modal-close" onclick="closeModal('tenantModal')">&times;</button>
+            </div>
+            <form id="tenantForm">
+                <div class="form-group">
+                    <label for="tenantName">Tenant Name *</label>
+                    <input type="text" id="tenantName" name="tenantName" required placeholder="Enter tenant full name">
+                </div>
+                <div class="form-group">
+                    <label for="tenantContact">Contact Number *</label>
+                    <input type="tel" id="tenantContact" name="tenantPhone" required placeholder="Enter phone number">
+                </div>
+                <div class="form-group">
+                    <label for="tenantEmail">Email Address</label>
+                    <input type="email" id="tenantEmail" name="tenantEmail" placeholder="Enter email address">
+                </div>
+                <div class="form-group">
+                    <label for="emergencyContact">Emergency Contact *</label>
+                    <input type="tel" id="emergencyContact" name="tenantEmergencyContact" required
+                        placeholder="Enter emergency contact number">
+                </div>
+                <div class="form-group">
+                    <label for="emergencyContactName">Emergency Contact Name</label>
+                    <input type="text" id="emergencyContactName" name="emergencyContactName"
+                        placeholder="Enter emergency contact name">
+                </div>
+                <div class="form-group">
+                    <label for="nidNumber">NID Number *</label>
+                    <input type="text" id="nidNumber" name="nidNumber" required placeholder="Enter National ID number">
+                </div>
+                <div class="form-group">
+                    <label for="nidPicture">NID Picture</label>
+                    <input type="file" id="nidPicture" accept="image/*">
+                    <div class="file-preview" id="nidPreview" style="display: none;">
+                        <img id="nidImage" src="" alt="NID Picture"
+                            style="max-width: 200px; max-height: 150px; margin-top: 10px; border-radius: 8px;">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="propertyManager.removeNidPicture()"
+                            style="margin-left: 10px;">Remove</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="leaseStartDate">Lease Start Date</label>
+                    <input type="date" id="leaseStartDate" name="leaseStartDate">
+                </div>
+                <div class="form-group">
+                    <label for="leaseEndDate">Lease End Date</label>
+                    <input type="date" id="leaseEndDate" name="leaseEndDate">
+                </div>
+                <div class="form-group">
+                    <label for="securityDeposit">Security Deposit (৳)</label>
+                    <input type="number" id="securityDeposit" name="securityDeposit" min="0" step="0.01"
+                        placeholder="Enter security deposit amount">
+                </div>
+                <div class="form-group">
+                    <label for="tenantAddress">Address</label>
+                    <textarea id="tenantAddress" name="tenantAddress" placeholder="Enter tenant address"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="tenantStatus">Status</label>
+                    <select id="tenantStatus" name="tenantStatus" class="form-control">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Pending">Pending</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="tenantNotes">Additional Notes</label>
+                    <textarea id="tenantNotes" name="tenantNotes"
+                        placeholder="Enter any additional notes about the tenant"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('tenantModal')">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="tenantSubmitBtn">Add Tenant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tenant Details Modal -->
+    <div class="modal" id="tenantDetailsModal">
+        <div class="modal-content tenant-details-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user"></i> Tenant Information</h3>
+                <button class="modal-close" onclick="closeModal('tenantDetailsModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="tenant-info-grid">
+                    <div class="info-card">
+                        <h4><i class="fas fa-user"></i> Personal Information</h4>
+                        <div class="info-row">
+                            <label>Full Name:</label>
+                            <span id="tenantDetailName">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Phone Number:</label>
+                            <span id="tenantDetailPhone">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Email Address:</label>
+                            <span id="tenantDetailEmail">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Status:</label>
+                            <span id="tenantDetailStatus" class="status-badge">-</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h4><i class="fas fa-phone"></i> Emergency Contact</h4>
+                        <div class="info-row">
+                            <label>Emergency Contact:</label>
+                            <span id="tenantDetailEmergencyContact">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Emergency Contact Name:</label>
+                            <span id="tenantDetailEmergencyContactName">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>NID Number:</label>
+                            <span id="tenantDetailNidNumber">-</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h4><i class="fas fa-calendar"></i> Lease Information</h4>
+                        <div class="info-row">
+                            <label>Lease Start Date:</label>
+                            <span id="tenantDetailLeaseStart">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Lease End Date:</label>
+                            <span id="tenantDetailLeaseEnd">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Security Deposit:</label>
+                            <span id="tenantDetailSecurityDeposit">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Added Date:</label>
+                            <span id="tenantDetailAddedDate">-</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card">
+                        <h4><i class="fas fa-map-marker-alt"></i> Address & Notes</h4>
+                        <div class="info-row">
+                            <label>Address:</label>
+                            <span id="tenantDetailAddress">-</span>
+                        </div>
+                        <div class="info-row">
+                            <label>Additional Notes:</label>
+                            <span id="tenantDetailNotes">-</span>
+                        </div>
+                    </div>
+
+                    <div class="info-card nid-card">
+                        <h4><i class="fas fa-id-card"></i> NID Picture</h4>
+                        <div id="tenantDetailNid" class="nid-container">
+                            <p>No NID picture uploaded</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="form-actions">
+                <button type="button" class="btn btn-warning"
+                    onclick="propertyManager.showEditTenantModal(propertyManager.editingTenantRoomId)">
+                    <i class="fas fa-edit"></i> Edit Tenant
+                </button>
+                <button type="button" class="btn btn-danger" onclick="propertyManager.confirmDeleteTenant()">
+                    <i class="fas fa-trash"></i> Remove Tenant
+                </button>
+                <button type="button" class="btn btn-secondary"
+                    onclick="closeModal('tenantDetailsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script src="theme-toggle.js"></script>
+</body>
+
+</html>
