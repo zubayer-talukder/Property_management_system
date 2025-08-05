@@ -243,6 +243,8 @@ rental-management-system/
 - 🌍 **Multi-Currency Support**: Support for multiple currencies
 - 📊 **Analytics Dashboard**: Advanced reporting and insights
 - ☁️ **Cloud Sync**: Optional cloud storage integration
+- 💰 **Payment GateWay**: We will add Payment Gateway later
+- 📅 **Monthly Income View** : We will add full monthly income based on all of your month
 
 ### Enhancement Requests
 We welcome feature requests and contributions! The system is designed to be easily extensible.
@@ -306,4 +308,4 @@ Transform your property management experience with this powerful, free tool. Whe
 
 ---
 
-*Last Updated: August 2025 | Version 1.0.0 | Built with ❤️ for property managers worldwide*
+*Last Updated: 06 August 2025 | Version 1.0.0 | Built with ❤️ for property managers worldwide*
