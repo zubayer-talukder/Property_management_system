@@ -245,6 +245,8 @@ rental-management-system/
 - ☁️ **Cloud Sync**: Optional cloud storage integration
 - 💰 **Payment GateWay**: We will add Payment Gateway later
 - 📅 **Monthly Income View** : We will add full monthly income based on all of your month
+- 👤 **User Authentication & Authorization** : A user can easily see his property on the by giving Passwords or MFA or Sign In /SignUp function will be added later.
+
 
 ### Enhancement Requests
 We welcome feature requests and contributions! The system is designed to be easily extensible.
