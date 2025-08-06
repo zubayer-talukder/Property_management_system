@@ -2,7 +2,36 @@
 
 A modern, comprehensive web-based property management system designed for rental property owners and managers. This intuitive system allows you to efficiently manage multiple properties, track room-wise rental income, and perform real-time financial calculations with a beautiful, responsive interface.
 
-![Property Management System](https://img.shields.io/badge/Version-1.0.0-blue) ![License](https://img.shields.io/badge/License-Open%20Source-green) ![Technology](https://img.shields.io/badge/Technology-HTML%2FCSS%2FJS-orange)
+![Property Management System](https://img.shields.io/badge/Version-1.0.0-blue) ![License](https://img.shields.io/badge/License-RMSL-red) ![Technology](https://img.shields.io/badge/Technology-HTML%2FCSS%2FJS-orange)
+
+## ⚖️ **IMPORTANT LICENSING INFORMATION**
+
+**⚠️ This software is NOT free for commercial use!**
+
+This project is licensed under the **Rental Management System License (RMSL)** with strict commercial restrictions:
+
+### 🔓 **FREE USE** (Allowed)
+- ✅ Personal use and learning
+- ✅ Educational purposes in schools/universities
+- ✅ Non-commercial research and development
+- ✅ Open source contributions back to this project
+
+### 🔒 **COMMERCIAL USE** (Requires License & Profit Sharing)
+- ❌ **Using this software to generate revenue requires permission**
+- ❌ **Incorporating into commercial products needs a license**
+- ❌ **Offering as a paid service requires profit sharing**
+
+### 💰 **Profit Sharing Requirement**
+**If you want to use this commercially, you MUST:**
+1. **Contact [@zubayer-talukder](https://github.com/zubayer-talukder) for commercial license**
+2. **Share 10-25% of profits** generated from using this software
+3. **Get written permission** before any commercial deployment
+
+**📧 Commercial Licensing**: 
+- GitHub: [@zubayer-talukder](https://github.com/zubayer-talukder)
+- Email: abdullahzubayertalukder@yahoo.com
+
+---
 
 ## ✨ Key Features
 
@@ -267,23 +296,36 @@ We welcome feature requests and contributions! The system is designed to be easi
 
 ## 📄 License & Usage
 
-### Open Source License
-This project is **completely free** and open source for:
-- ✅ Personal use
-- ✅ Commercial use  
-- ✅ Modification and distribution
-- ✅ Private and public projects
+### Rental Management System License (RMSL)
+This project is licensed under a **custom license** with commercial restrictions:
 
-### Attribution
-While not required, attribution is appreciated:
+**🔓 FREE USE:**
+- ✅ Personal use and learning
+- ✅ Educational purposes
+- ✅ Non-commercial research
+- ✅ Open source contributions
+
+**🔒 COMMERCIAL USE REQUIRES:**
+- ❌ Written permission from copyright holder
+- ❌ Profit sharing agreement (10-25% of profits)
+- ❌ Commercial licensing fee
+
+### Contact for Commercial Use
+**📧 Commercial Licensing Inquiries:**
+- GitHub: [@zubayer-talukder](https://github.com/zubayer-talukder)
+- Email: abdullahzubayertalukder@yahoo.com
+
+### Attribution Required
 ```
-Property Management System - Open Source Rental Management Tool
+Rental Management System
+Copyright (c) 2025 Abdullah Zubayer Talukder
+Licensed under RMSL - See LICENSE.txt
 ```
 
 ## 🎉 Why Choose This System?
 
 ### For Property Owners
-- **Cost-Effective**: Completely free, no subscription fees
+- **Cost-Effective**: Free for personal use, affordable commercial licensing
 - **Privacy-First**: Your data never leaves your device
 - **User-Friendly**: Intuitive interface for all skill levels
 - **Comprehensive**: All essential features included
@@ -304,10 +346,13 @@ Property Management System - Open Source Rental Management Tool
 
 ## 📈 Get Started Today!
 
-Transform your property management experience with this powerful, free tool. Whether you're managing a single building or a large portfolio, this system provides everything you need to track rental income, manage properties, and maintain organized records.
+Transform your property management experience with this powerful tool. Whether you're managing a single building or a large portfolio, this system provides everything you need to track rental income, manage properties, and maintain organized records.
 
 **Ready to begin?** Simply open `index.html` in your browser and start adding your first property!
 
+**Note:** For commercial use, please contact for licensing: abdullahzubayertalukder@yahoo.com
+
 ---
 
-*Last Updated: 06 August 2025 | Version 1.0.0 | Built with ❤️ for property managers worldwide*
+*Last Updated: 06 August 2025 | Version 1.0.0 | Copyright (c) 2025 Abdullah Zubayer Talukder*
+*Licensed under RMSL | Commercial use requires licensing | Contact: abdullahzubayertalukder@yahoo.com*

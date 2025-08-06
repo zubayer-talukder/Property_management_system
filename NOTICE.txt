@@ -1,0 +1,21 @@
+NOTICE: COMMERCIAL USE RESTRICTIONS
+
+This software (Rental Management System) is protected by copyright and 
+requires a commercial license for business use.
+
+🚫 COMMERCIAL USE WITHOUT PERMISSION IS PROHIBITED
+
+✅ Free for: Personal use, education, learning, non-commercial research
+❌ Requires License: Business use, revenue generation, commercial products
+
+💰 PROFIT SHARING REQUIRED for commercial use (10-25% of profits)
+
+📧 Contact: 
+
+@zubayer-talukder on GitHub for commercial licensing
+- Email: abdullahzubayertalukder@yahoo.com
+
+
+Copyright (c) 2025 Abdullah Zubayer Talukder
+Licensed under Rental Management System License (RMSL)
+See LICENSE.txt for complete terms.

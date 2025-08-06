@@ -1,0 +1,61 @@
+Rental Management System License (RMSL)
+Copyright (c) 2025 Abdullah Zubayer Talukder
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge, and distribute the Software for PERSONAL, EDUCATIONAL,
+and NON-COMMERCIAL purposes, subject to the following conditions:
+
+COMMERCIAL USE RESTRICTIONS:
+1. Any commercial use, including but not limited to:
+   - Using this Software to generate revenue
+   - Incorporating this Software into commercial products or services
+   - Offering this Software as a paid service
+   - Using this Software in any business operation
+   REQUIRES a separate commercial license agreement with the copyright holder.
+
+2. If you wish to use this Software for commercial purposes, you must:
+   - Contact the copyright holder ( Abdullah Zubayer Talukder) for a commercial license
+   - Share a mutually agreed percentage of profits generated from the use of this Software
+   - Obtain written permission before any commercial deployment
+
+PERMITTED USES:
+- Personal use and learning
+- Educational purposes in academic institutions
+- Open source contributions back to this project
+- Modification for personal use
+- Non-commercial research and development
+
+PROHIBITED USES:
+- Commercial use without explicit written permission
+- Selling or licensing this Software without permission
+- Creating competing commercial products based on this Software
+- Removing or modifying this license notice
+
+PROFIT SHARING CLAUSE:
+Any commercial use of this Software requires profit sharing with the original
+copyright holder (Abdullah Zubayer Talukder). The profit sharing percentage will be
+negotiated on a case-by-case basis, typically ranging from 10% to 25% of
+net profits generated from Software usage.
+
+ATTRIBUTION:
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+DISCLAIMER:
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+CONTACT INFORMATION:
+For commercial licensing inquiries, please contact:
+- GitHub: @zubayer-talukder
+- Repository: Property_management_system
+- Email : abdullahzubayertalukder@yahoo.com
+
+
+This license is effective as of August 4, 2025.
