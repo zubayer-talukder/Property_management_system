@@ -19,3 +19,8 @@ requires a commercial license for business use.
 Copyright (c) 2025 Abdullah Zubayer Talukder
 Licensed under Rental Management System License (RMSL)
 See LICENSE.txt for complete terms.
+
+=====================================
+Abdullah Zubayer Talukder
+All Rights Reserved.
+=====================================

@@ -152,3 +152,13 @@ document.addEventListener('DOMContentLoaded', function() {
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ThemeManager;
 }
+
+/*
+ * =====================================
+ * Copyright (c) 2025 Abdullah Zubayer Talukder
+ * All Rights Reserved.
+ * 
+ * Theme Toggle System
+ * Licensed under RMSL
+ * =====================================
+ */

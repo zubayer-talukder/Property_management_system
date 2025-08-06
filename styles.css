@@ -1614,3 +1614,40 @@ table td, table th,
     color: #92400E;
     border-color: #F59E0B;
 }
+
+/* Copyright Footer */
+.copyright-footer {
+    background: #1E3A8A;
+    color: white;
+    padding: 20px 0;
+    margin-top: 50px;
+    text-align: center;
+    border-top: 4px solid #3B82F6;
+}
+
+.copyright-footer p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.copyright-footer .license-note {
+    font-size: 12px;
+    opacity: 0.8;
+    color: #CBD5E1;
+}
+
+.copyright-footer .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/*
+ * =====================================
+ * Copyright (c) 2025 Abdullah Zubayer Talukder
+ * All Rights Reserved.
+ * 
+ * Rental Management System Styles
+ * Licensed under RMSL
+ * =====================================
+ */

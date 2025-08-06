@@ -1415,4 +1415,14 @@ document.addEventListener('DOMContentLoaded', () => {
     propertyManager = new PropertyManager();
 });
 
+/*
+ * =====================================
+ * Copyright (c) 2025 Abdullah Zubayer Talukder
+ * All Rights Reserved.
+ * 
+ * Rental Management System
+ * Licensed under RMSL
+ * =====================================
+ */
+
 
