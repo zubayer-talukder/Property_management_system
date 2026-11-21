@@ -8,6 +8,15 @@
   <meta name="description" content="নিরাপদ মোবাইল ওটিপি (OTP) ও গুগল অ্যাকাউন্টের মাধ্যমে লগইন করুন।">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <!-- Theme Init: Prevent Flash of Wrong Theme (FOUC) -->
+  <script>
+    (function initTheme() {
+      try {
+        const theme = localStorage.getItem('pms_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_) {}
+    })();
+  </script>
   <script>
     // Reverse Auth Guard: If already logged in with valid account, redirect to dashboard
     (function checkSession() {
@@ -318,12 +327,59 @@
         display: none;
       }
     }
+
+    /* ── Light Theme Overrides for Login Page ── */
+    [data-theme="light"] .login-container {
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.08);
+    }
+    [data-theme="light"] .login-brand-panel {
+      background: #f8fafc;
+      border-right: 1px solid #e2e8f0;
+    }
+    [data-theme="light"] .brand-logo-large .icon {
+      background: #0f172a;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+    }
+    [data-theme="light"] .brand-logo-large h1 {
+      color: #0f172a;
+    }
+    [data-theme="light"] .brand-logo-large span {
+      color: #475569;
+    }
+    [data-theme="light"] .brand-features li strong {
+      color: #0f172a;
+    }
+    [data-theme="light"] .brand-features li {
+      color: #334155;
+    }
+    [data-theme="light"] .brand-features li .check-icon {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #0f172a;
+    }
+    [data-theme="light"] .btn-google {
+      background: #ffffff;
+      border: 1.5px solid #cbd5e1;
+      color: #0f172a;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.06);
+    }
+    [data-theme="light"] .btn-google:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
   </style>
 </head>
 
 <body>
 
   <div class="login-wrapper">
+    <!-- Floating Theme Switcher Button -->
+    <button id="btn-theme-toggle" class="btn btn-secondary theme-toggle-floating" title="থিম পরিবর্তন করুন (লাইট / ব্লুইশ)">
+      <i class="fa-solid fa-moon"></i>
+    </button>
+
     <div class="login-container">
 
       <!-- Left Column: Branding -->

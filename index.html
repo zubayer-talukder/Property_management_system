@@ -8,6 +8,15 @@
   <meta name="description" content="বাড়ি ভাড়া, ভাড়াটিয়া KYC, বিদ্যুৎ বিল ও মাসিক বিলিং পরিচালনার সম্পূর্ণ সিস্টেম।">
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <!-- Theme Init: Prevent Flash of Wrong Theme (FOUC) -->
+  <script>
+    (function initTheme() {
+      try {
+        const theme = localStorage.getItem('pms_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (_) {}
+    })();
+  </script>
   <!-- Strict Auth Guard: Immediately hide body and force login if not authenticated -->
   <style id="auth-guard-style">
     body {
@@ -58,6 +67,11 @@
     </div>
 
     <div class="header-actions">
+      <!-- Theme Switcher (Light / Bluish) -->
+      <button id="btn-theme-toggle" class="btn btn-secondary btn-icon" title="থিম পরিবর্তন করুন (লাইট / ব্লুইশ)">
+        <i class="fa-solid fa-moon"></i>
+      </button>
+
       <!-- Firebase Status -->
       <span id="firebase-status-badge" class="firebase-badge"><i class="fa-solid fa-triangle-exclamation"></i> Demo
         Mode</span>
