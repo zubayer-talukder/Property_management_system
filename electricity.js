@@ -139,11 +139,30 @@ function elecAutoSyncBills(silent = true) {
   linkedRoomIds.forEach(rid => {
     const room = p.rooms.find(r => r.id === rid);
     if (!room) return;
-    const b = getBill(room, m);
     const newBill = roomBills[rid] !== undefined ? roomBills[rid] : 0;
-    if (b.electricity !== newBill) {
+    if (!room.bills) room.bills = {};
+    if (!room.bills[m] && newBill === 0) return;
+    if (!room.bills[m] && newBill > 0) {
+      room.bills[m] = {
+        month: m,
+        tenant: room.tenant?.name || '',
+        rent: tk(room.baseRent),
+        electricity: newBill,
+        water: tk(room.waterBill),
+        gas: tk(room.gasBill),
+        wifi: tk(room.wifiBill),
+        other: tk(room.otherBill),
+        prevBalance: 0,
+        paid: 0
+      };
+      if (typeof recalcBill === 'function') recalcBill(room.bills[m]);
+      changed = true;
+      return;
+    }
+    const b = room.bills[m];
+    if (b && b.electricity !== newBill) {
       b.electricity = newBill;
-      recalcBill(b);
+      if (typeof recalcBill === 'function') recalcBill(b);
       changed = true;
     }
   });

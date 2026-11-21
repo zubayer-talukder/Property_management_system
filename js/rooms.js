@@ -22,9 +22,6 @@ el('btn-next-month').addEventListener('click', () => {
 
 function renderDetailPage() {
   const p = getActiveProperty(); if (!p) return;
-  if (typeof window.elecAutoSyncBills === 'function') {
-    window.elecAutoSyncBills(true);
-  }
   el('detail-prop-name').textContent = p.name;
   el('detail-prop-addr').textContent = p.address;
   el('detail-month-label').textContent = monthLabel(STATE.activeMonth);
@@ -119,100 +116,92 @@ function renderRoomsTable(p) {
 }
 
 /* ── Bill helpers & Ledger Balance Engine ───────────────────── */
-function getPreviousEndingBalance(room, month) {
-  if (!room || !room.bills) return 0;
-  const pm = prevMonth(month);
-  const prevBill = room.bills[pm];
-  if (!prevBill) return 0;
-  const curTot = tk(prevBill.currentTotal) || (tk(prevBill.rent) + tk(prevBill.electricity) + tk(prevBill.water) + tk(prevBill.gas) + tk(prevBill.wifi) + tk(prevBill.other));
-  const prevBal = parseFloat(prevBill.prevBalance) || 0;
-  const paid = tk(prevBill.paid);
-  // Net ending balance: positive means tenant owes money (due), negative means tenant overpaid (advance credit)
-  return (curTot + prevBal) - paid;
+
+// Find the tenant's last recorded month before targetMonth
+function getLastRecordedBillBefore(room, targetMonth) {
+  if (!room || !room.bills) return null;
+  const validMonths = Object.keys(room.bills)
+    .filter(m => m < targetMonth && room.bills[m] && !room.bills[m].isTransient)
+    .sort();
+
+  if (validMonths.length === 0) return null;
+  const lastM = validMonths[validMonths.length - 1];
+  return { month: lastM, bill: room.bills[lastM] };
 }
 
+// Compute the unpaid due or advance from the last recorded month
+function calculateCarriedDuesForMonth(room, targetMonth) {
+  const last = getLastRecordedBillBefore(room, targetMonth);
+  if (!last || !last.bill) return 0;
+
+  const b = last.bill;
+  const total = tk(b.total) || (tk(b.currentTotal) + (parseFloat(b.prevBalance) || 0));
+  const paid = tk(b.paid);
+
+  if (total === 0 && paid === 0) return 0;
+  // positive = due from last month, negative = advance credit
+  return total - paid;
+}
+
+// Forward sync only: when an older month's payment is edited, update subsequent existing months
 function syncRoomBillsForward(room, fromMonth) {
   if (!room || !room.bills) return;
-  const months = Object.keys(room.bills).sort();
-  const startIdx = months.indexOf(fromMonth);
-  if (startIdx === -1) return;
+  const forwardMonths = Object.keys(room.bills)
+    .filter(m => m > fromMonth && room.bills[m] && !room.bills[m].isTransient)
+    .sort();
 
-  for (let i = startIdx + 1; i < months.length; i++) {
-    const m = months[i];
-    const prevM = months[i - 1];
-    if (prevMonth(m) === prevM) {
-      const b = room.bills[m];
-      if (b && !b.manualPrevBalance) {
-        b.prevBalance = getPreviousEndingBalance(room, m);
-        recalcBill(b);
-      }
+  forwardMonths.forEach(m => {
+    const b = room.bills[m];
+    if (b && !b.manualPrevBalance) {
+      b.prevBalance = calculateCarriedDuesForMonth(room, m);
+      recalcBill(b);
     }
-  }
+  });
 }
 
+// PURE SAFE GETTER: Merely visiting/reading a month NEVER mutates data and NEVER calls save()
 function getBill(room, month) {
-  if (!room.bills[month]) {
-    room.bills[month] = makeBill(room, month);
-    save();
-  } else {
+  if (!room) return null;
+  if (!room.bills) room.bills = {};
+
+  // If this month already has a saved bill, return it directly
+  if (room.bills[month]) {
     const b = room.bills[month];
     if (room.tenant && !b.tenant) b.tenant = room.tenant.name;
-    // Auto-update previous balance if not manually pinned
-    if (!b.manualPrevBalance) {
-      const autoPrev = getPreviousEndingBalance(room, month);
-      if (parseFloat(b.prevBalance || 0) !== autoPrev) {
-        b.prevBalance = autoPrev;
-        recalcBill(b);
-        save();
-      }
-    }
+    return b;
   }
-  return room.bills[month];
+
+  // If no saved bill exists, return an in-memory preview without saving or mutating database
+  return makeTransientBill(room, month);
 }
 
-function makeBill(room, month) {
-  const pm = prevMonth(month);
-  const prev = room.bills[pm];
-  const prevBalance = getPreviousEndingBalance(room, month);
+function makeTransientBill(room, month) {
+  const baseRent = tk(room.baseRent);
+  const water = tk(room.waterBill);
+  const gas = tk(room.gasBill);
+  const wifi = tk(room.wifiBill);
+  const other = tk(room.otherBill);
+  const currentTotal = baseRent + water + gas + wifi + other;
 
-  if (prev) {
-    return recalcBill({
-      month,
-      tenant: room.tenant?.name || '',
-      rent: tk(prev.rent),
-      electricity: 0,
-      water: tk(prev.water),
-      gas: tk(prev.gas),
-      wifi: tk(prev.wifi),
-      other: tk(prev.other),
-      prevBalance: prevBalance,
-      currentTotal: 0,
-      total: 0,
-      paid: 0,
-      due: 0,
-      advance: 0,
-      paidDate: '',
-      comment: prevBalance > 0 ? `পূর্বের বকেয়া ৳${prevBalance.toLocaleString('en-IN')} যুক্ত হয়েছে` : prevBalance < 0 ? `পূর্বের অতিরিক্ত জমা ৳${Math.abs(prevBalance).toLocaleString('en-IN')} সমন্বয় হয়েছে` : ''
-    });
-  }
-  return recalcBill({
+  return {
     month,
     tenant: room.tenant?.name || '',
-    rent: tk(room.baseRent),
+    rent: baseRent,
     electricity: 0,
-    water: tk(room.waterBill),
-    gas: tk(room.gasBill),
-    wifi: tk(room.wifiBill),
-    other: tk(room.otherBill),
-    prevBalance: prevBalance,
-    currentTotal: 0,
-    total: 0,
+    water,
+    gas,
+    wifi,
+    other,
+    prevBalance: 0,
+    currentTotal,
+    total: currentTotal,
     paid: 0,
-    due: 0,
+    due: currentTotal,
     advance: 0,
     paidDate: '',
-    comment: ''
-  });
+    comment: '',
+    isTransient: true
+  };
 }
 
 function recalcBill(b) {
@@ -248,33 +237,57 @@ el('btn-auto-generate').addEventListener('click', () => {
   let count = 0;
   occupiedRooms.forEach(r => {
     let b = r.bills[m];
-    const prev = r.bills[prevMonth(m)];
+    const lastRecorded = getLastRecordedBillBefore(r, m);
+    const prevBill = lastRecorded?.bill;
+    const carriedDue = calculateCarriedDuesForMonth(r, m);
 
-    if (!b) {
-      b = makeBill(r, m);
+    if (!b || b.isTransient) {
+      b = {
+        month: m,
+        tenant: r.tenant?.name || '',
+        rent: prevBill ? tk(prevBill.rent) : tk(r.baseRent),
+        electricity: 0,
+        water: prevBill ? tk(prevBill.water) : tk(r.waterBill),
+        gas: prevBill ? tk(prevBill.gas) : tk(r.gasBill),
+        wifi: prevBill ? tk(prevBill.wifi) : tk(r.wifiBill),
+        other: prevBill ? tk(prevBill.other) : tk(r.otherBill),
+        prevBalance: carriedDue,
+        currentTotal: 0,
+        total: 0,
+        paid: 0,
+        due: 0,
+        advance: 0,
+        paidDate: '',
+        comment: carriedDue > 0
+          ? `পূর্বের বকেয়া ৳${carriedDue.toLocaleString('en-IN')} যুক্ত হয়েছে`
+          : carriedDue < 0
+            ? `পূর্বের অতিরিক্ত জমা ৳${Math.abs(carriedDue).toLocaleString('en-IN')} সমন্বয় হয়েছে`
+            : ''
+      };
       r.bills[m] = b;
     } else {
       b.tenant = r.tenant?.name || b.tenant || '';
       if (!b.manualPrevBalance) {
-        b.prevBalance = getPreviousEndingBalance(r, m);
+        b.prevBalance = carriedDue;
       }
       if (tk(b.rent) === 0) {
-        b.rent = prev ? tk(prev.rent) : tk(r.baseRent);
+        b.rent = prevBill ? tk(prevBill.rent) : tk(r.baseRent);
       }
       if (tk(b.water) === 0) {
-        b.water = prev ? tk(prev.water) : tk(r.waterBill);
+        b.water = prevBill ? tk(prevBill.water) : tk(r.waterBill);
       }
       if (tk(b.gas) === 0) {
-        b.gas = prev ? tk(prev.gas) : tk(r.gasBill);
+        b.gas = prevBill ? tk(prevBill.gas) : tk(r.gasBill);
       }
       if (tk(b.wifi) === 0) {
-        b.wifi = prev ? tk(prev.wifi) : tk(r.wifiBill);
+        b.wifi = prevBill ? tk(prevBill.wifi) : tk(r.wifiBill);
       }
       if (tk(b.other) === 0) {
-        b.other = prev ? tk(prev.other) : tk(r.otherBill);
+        b.other = prevBill ? tk(prevBill.other) : tk(r.otherBill);
       }
-      recalcBill(b);
     }
+    delete b.isTransient;
+    recalcBill(b);
     count++;
   });
 
@@ -282,6 +295,11 @@ el('btn-auto-generate').addEventListener('click', () => {
   if (typeof window.elecAutoSyncBills === 'function') {
     window.elecAutoSyncBills(true);
   }
+
+  save();
+  renderDetailPage();
+  toast(`${monthLabel(m)}-এর জন্য ${count}টি রুমের বিল প্রস্তুত হয়েছে!`, 'success');
+});
 
   save();
   renderDetailPage();
@@ -361,11 +379,12 @@ window.deleteRoom = function(rid) {
 /* ── Bill Modal ─────────────────────────────────────────────── */
 window.openBillModal = function(rid) {
   const p = getActiveProperty(); if (!p) return;
-  if (typeof window.elecAutoSyncBills === 'function') {
-    window.elecAutoSyncBills(true);
-  }
   const room = p.rooms.find(r => r.id === rid); if (!room) return;
   const b = getBill(room, STATE.activeMonth);
+  const carriedPrev = (b.prevBalance !== undefined && !b.isTransient)
+    ? b.prevBalance
+    : calculateCarriedDuesForMonth(room, STATE.activeMonth);
+
   el('bill-room-label').textContent = `রুম ${room.number} — ${monthLabel(STATE.activeMonth)}`;
   el('bill-rent').value       = b.rent;
   el('bill-electricity').value= b.electricity;
@@ -373,12 +392,12 @@ window.openBillModal = function(rid) {
   el('bill-gas').value        = b.gas;
   el('bill-wifi').value       = b.wifi;
   el('bill-other').value      = b.other;
-  el('bill-prev-balance').value = b.prevBalance !== undefined ? b.prevBalance : getPreviousEndingBalance(room, STATE.activeMonth);
+  el('bill-prev-balance').value = carriedPrev;
   el('bill-paid').value       = b.paid;
   el('bill-paid-date').value  = b.paidDate;
   el('bill-comment').value    = b.comment;
   el('form-bill').dataset.roomId = rid;
-  updateBillTotalsUI(b);
+  updateBillTotalsUI({ ...b, prevBalance: carriedPrev });
   openModal('modal-bill');
 };
 
@@ -439,7 +458,14 @@ el('form-bill').addEventListener('submit', e => {
   const p = getActiveProperty(); if (!p) return;
   const rid = e.target.dataset.roomId;
   const room = p.rooms.find(r => r.id === rid); if (!room) return;
-  const b = getBill(room, STATE.activeMonth);
+  if (!room.bills) room.bills = {};
+
+  let b = room.bills[STATE.activeMonth];
+  if (!b || b.isTransient) {
+    b = { month: STATE.activeMonth, tenant: room.tenant?.name || '' };
+    room.bills[STATE.activeMonth] = b;
+  }
+
   b.rent        = tk(el('bill-rent').value);
   b.electricity = tk(el('bill-electricity').value);
   b.water       = tk(el('bill-water').value);
@@ -448,7 +474,7 @@ el('form-bill').addEventListener('submit', e => {
   b.other       = tk(el('bill-other').value);
 
   const enteredPrev = parseFloat(el('bill-prev-balance').value) || 0;
-  const autoPrev = getPreviousEndingBalance(room, STATE.activeMonth);
+  const autoPrev = calculateCarriedDuesForMonth(room, STATE.activeMonth);
   if (enteredPrev !== autoPrev) {
     b.manualPrevBalance = true;
   } else {
@@ -459,6 +485,7 @@ el('form-bill').addEventListener('submit', e => {
   b.paid        = tk(el('bill-paid').value);
   b.paidDate    = el('bill-paid-date').value;
   b.comment     = el('bill-comment').value;
+  delete b.isTransient;
   recalcBill(b);
 
   // Sync subsequent months forward so November changes immediately reflect in December, January, etc.
@@ -466,4 +493,5 @@ el('form-bill').addEventListener('submit', e => {
 
   save(); closeModal('modal-bill'); renderDetailPage();
   toast('বিল আপডেট হয়েছে!', 'success');
+});
 });
