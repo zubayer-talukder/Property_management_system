@@ -1905,11 +1905,247 @@ select.form-control option { background: #ffffff; color: var(--text-primary); }
   color: #0f172a !important;
 }
 
+/* ── Landlord Summary Sheet (Screen & Modal View) ────── */
+.summary-sheet-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1;
+  border-radius: var(--radius-md);
+  padding: 1.6rem 1.8rem;
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  position: relative;
+}
+
+.summary-sheet-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 2px solid #0f172a;
+  flex-wrap: wrap;
+}
+
+.summary-sheet-brand h2 {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.2rem;
+}
+
+.summary-sheet-brand p {
+  font-size: 0.82rem;
+  color: #475569;
+  margin-bottom: 0.5rem;
+}
+
+.lss-doc-title {
+  display: inline-block;
+  background: #0f172a;
+  color: #ffffff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.25rem 0.75rem;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.summary-sheet-meta {
+  text-align: right;
+  font-size: 0.84rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.summary-sheet-meta strong {
+  color: #0f172a;
+}
+
+.lss-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.85rem;
+  margin-bottom: 1.35rem;
+}
+@media (max-width: 680px) {
+  .lss-kpi-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.lss-kpi-item {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 0.95rem;
+  text-align: center;
+}
+.lss-kpi-item.green {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+}
+.lss-kpi-item.red {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+.lss-kpi-item.blue {
+  background: #f0f9ff;
+  border-color: #bae6fd;
+}
+
+.lss-kpi-item .kpi-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+.lss-kpi-item .kpi-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+.lss-kpi-item.green .kpi-value { color: #059669; }
+.lss-kpi-item.red .kpi-value { color: #dc2626; }
+.lss-kpi-item.blue .kpi-value { color: #0284c7; }
+
+.lss-kpi-item .kpi-sub {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+  font-weight: 600;
+}
+
+.lss-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+  margin-bottom: 1.25rem;
+}
+.lss-table th, .lss-table td {
+  padding: 0.6rem 0.75rem;
+  border: 1px solid #e2e8f0;
+  vertical-align: middle;
+}
+.lss-table thead th {
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 0.73rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #cbd5e1;
+}
+.lss-table tbody tr:nth-child(even) {
+  background: #f8fafc;
+}
+.lss-table tbody tr.lss-row-has-due {
+  background: #fff8f8;
+}
+.lss-table tbody td {
+  color: #1e293b;
+}
+.lss-table tfoot th {
+  background: #f1f5f9;
+  font-weight: 800;
+  border-top: 2px solid #cbd5e1;
+  color: #0f172a;
+}
+
+.lss-pill {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+.lss-pill-paid   { background: #ecfdf5; color: #047857; border: 1px solid #a7f3d0; }
+.lss-pill-due    { background: #fef2f2; color: #b91c1c; border: 1px solid #fecaca; }
+.lss-pill-partial{ background: #fffbeb; color: #b45309; border: 1px solid #fde68a; }
+.lss-pill-vacant { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+.lss-dues-callout {
+  background: #fef2f2;
+  border: 1.5px solid #fecaca;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.25rem;
+}
+.dues-callout-title {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #b91c1c;
+  margin-bottom: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+.dues-callout-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.dues-item-chip {
+  background: #ffffff;
+  border: 1px solid #fca5a5;
+  border-radius: 6px;
+  padding: 0.32rem 0.65rem;
+  font-size: 0.78rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.dues-item-chip .chip-room { font-weight: 800; color: #0f172a; }
+.dues-item-chip .chip-name { font-weight: 700; color: #334155; }
+.dues-item-chip .chip-phone { font-size: 0.72rem; color: #64748b; }
+.dues-item-chip .chip-amount { font-weight: 800; color: #dc2626; background: #fee2e2; padding: 0.1rem 0.4rem; border-radius: 4px; }
+
+.lss-signatures-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-top: 2rem;
+  padding-top: 0.5rem;
+}
+.lss-sig-box {
+  text-align: center;
+  min-width: 180px;
+}
+.lss-sig-line {
+  border-top: 1.5px dashed #475569;
+  margin-bottom: 0.35rem;
+}
+.lss-sig-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+.lss-footer-note {
+  text-align: center;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 1.25rem;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.5rem;
+}
+
+/* Also ensure Landlord Summary stays crisp white in bluish theme */
+[data-theme="bluish"] .summary-sheet-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1.5px solid #cbd5e1 !important;
+}
+
 /* ── BULLETPROOF PRINT / PDF STYLES ────────────────────────── */
 @media print {
   @page {
     size: A4 portrait;
-    margin: 10mm 14mm;
+    margin: 8mm 12mm;
   }
 
   /* Reset body and html completely */
@@ -1917,8 +2153,8 @@ select.form-control option { background: #ffffff; color: var(--text-primary); }
     background: #ffffff !important;
     color: #000000 !important;
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
-    font-size: 11pt !important;
-    line-height: 1.35 !important;
+    font-size: 10pt !important;
+    line-height: 1.3 !important;
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
@@ -1929,20 +2165,23 @@ select.form-control option { background: #ffffff; color: var(--text-primary); }
     print-color-adjust: exact !important;
   }
 
-  /* Hide everything except the receipt modal */
+  /* Hide everything except the active printable modal */
   body::before, body::after,
   #pms-header,
   #app-wrapper,
   #toast-container,
-  .modal-backdrop:not(#modal-receipt),
-  #modal-receipt .modal-header,
-  #modal-receipt .modal-footer,
-  #modal-receipt .modal-close {
+  .modal-backdrop:not(#modal-receipt):not(#modal-landlord-summary),
+  #modal-receipt:not(.open),
+  #modal-landlord-summary:not(.open),
+  .modal-header,
+  .modal-footer,
+  .modal-close {
     display: none !important;
   }
 
   /* Flatten modal containers so they flow directly onto paper */
-  #modal-receipt {
+  #modal-receipt.open,
+  #modal-landlord-summary.open {
     position: static !important;
     display: block !important;
     opacity: 1 !important;
@@ -1960,7 +2199,8 @@ select.form-control option { background: #ffffff; color: var(--text-primary); }
     inset: auto !important;
   }
 
-  #modal-receipt .modal {
+  #modal-receipt.open .modal,
+  #modal-landlord-summary.open .modal {
     position: static !important;
     display: block !important;
     width: 100% !important;
@@ -1975,7 +2215,8 @@ select.form-control option { background: #ffffff; color: var(--text-primary); }
     margin: 0 !important;
   }
 
-  #modal-receipt .modal-body {
+  #modal-receipt.open .modal-body,
+  #modal-landlord-summary.open .modal-body {
     padding: 0 !important;
     margin: 0 !important;
     overflow: visible !important;
@@ -2121,5 +2362,184 @@ select.form-control option { background: #ffffff; color: var(--text-primary); }
     background: #ffffff !important;
     font-weight: 800 !important;
     padding: 2px 8px !important;
+  }
+
+  /* ── Landlord Summary Sheet Print Overrides ── */
+  #summary-printable-area {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    overflow: visible !important;
+  }
+
+  .summary-sheet-card {
+    border: 1.5px solid #000000 !important;
+    border-radius: 4px !important;
+    padding: 6mm 8mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    page-break-after: avoid !important;
+  }
+
+  .summary-sheet-header {
+    border-bottom: 2px solid #000000 !important;
+    padding-bottom: 6px !important;
+    margin-bottom: 8px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+  }
+
+  .summary-sheet-brand h2 {
+    color: #000000 !important;
+    font-size: 13pt !important;
+  }
+
+  .summary-sheet-brand p {
+    color: #333333 !important;
+    font-size: 8pt !important;
+  }
+
+  .lss-doc-title {
+    background: #000000 !important;
+    color: #ffffff !important;
+    font-size: 7.5pt !important;
+    padding: 2px 6px !important;
+    border-radius: 2px !important;
+  }
+
+  .summary-sheet-meta {
+    color: #000000 !important;
+    font-size: 8pt !important;
+    line-height: 1.4 !important;
+  }
+
+  .lss-kpi-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .lss-kpi-item {
+    border: 1px solid #000000 !important;
+    background: #f8f9fa !important;
+    padding: 4px 6px !important;
+    text-align: center !important;
+  }
+
+  .lss-kpi-item .kpi-label {
+    font-size: 6.5pt !important;
+    color: #333333 !important;
+    font-weight: 800 !important;
+  }
+
+  .lss-kpi-item .kpi-value {
+    font-size: 11pt !important;
+    font-weight: 900 !important;
+    color: #000000 !important;
+  }
+
+  .lss-kpi-item .kpi-sub {
+    font-size: 6.5pt !important;
+    color: #444444 !important;
+  }
+
+  .lss-table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    font-size: 8pt !important;
+    margin-bottom: 8px !important;
+  }
+
+  .lss-table th, .lss-table td {
+    border: 1px solid #333333 !important;
+    padding: 3.5px 5px !important;
+  }
+
+  .lss-table thead th {
+    background: #f1f3f5 !important;
+    color: #000000 !important;
+    font-size: 7.5pt !important;
+    font-weight: 800 !important;
+    border-bottom: 1.5px solid #000000 !important;
+  }
+
+  .lss-table tbody tr:nth-child(even) {
+    background: #f8f9fa !important;
+  }
+
+  .lss-table tfoot th {
+    background: #e9ecef !important;
+    color: #000000 !important;
+    font-size: 8pt !important;
+    font-weight: 800 !important;
+  }
+
+  .lss-pill {
+    border: 1px solid #000000 !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 1px 4px !important;
+    font-size: 6.5pt !important;
+  }
+
+  .lss-dues-callout {
+    border: 1px solid #000000 !important;
+    background: #f8f9fa !important;
+    padding: 5px 8px !important;
+    margin-bottom: 8px !important;
+    page-break-inside: avoid !important;
+  }
+
+  .dues-callout-title {
+    font-size: 8pt !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+    margin-bottom: 4px !important;
+  }
+
+  .dues-item-chip {
+    border: 1px solid #333333 !important;
+    background: #ffffff !important;
+    padding: 2px 6px !important;
+    font-size: 7.5pt !important;
+  }
+
+  .dues-item-chip .chip-amount {
+    font-weight: 900 !important;
+    color: #000000 !important;
+    background: #f1f3f5 !important;
+  }
+
+  .lss-signatures-row {
+    margin-top: 18px !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    page-break-inside: avoid !important;
+  }
+
+  .lss-sig-line {
+    border-top: 1.5px solid #000000 !important;
+    width: 170px !important;
+  }
+
+  .lss-sig-title {
+    font-size: 7.5pt !important;
+    color: #000000 !important;
+    font-weight: 800 !important;
+  }
+
+  .lss-footer-note {
+    font-size: 6.5pt !important;
+    color: #666666 !important;
+    border-top: 1px solid #cccccc !important;
+    margin-top: 8px !important;
   }
 }
