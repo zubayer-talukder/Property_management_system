@@ -27,7 +27,7 @@ function renderDetailPage() {
   el('detail-month-label').textContent = monthLabel(STATE.activeMonth);
   renderMetrics(p);
   renderRoomsTable(p);
-  updateBackupStatus();
+  if (typeof updateBackupStatus === 'function') updateBackupStatus();
 }
 
 function renderMetrics(p) {
@@ -301,11 +301,6 @@ el('btn-auto-generate').addEventListener('click', () => {
   toast(`${monthLabel(m)}-এর জন্য ${count}টি রুমের বিল প্রস্তুত হয়েছে!`, 'success');
 });
 
-  save();
-  renderDetailPage();
-  toast(`${monthLabel(m)} এর জন্য ${count}টি রুমের বিল প্রস্তুত হয়েছে!`, 'success');
-});
-
 /* ── Add Room ───────────────────────────────────────────────── */
 el('btn-add-room').addEventListener('click', () => {
   if (!isLoggedIn()) { triggerGoogleLogin(); return; }
@@ -493,5 +488,4 @@ el('form-bill').addEventListener('submit', e => {
 
   save(); closeModal('modal-bill'); renderDetailPage();
   toast('বিল আপডেট হয়েছে!', 'success');
-});
 });
