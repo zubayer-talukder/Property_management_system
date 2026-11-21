@@ -9,10 +9,15 @@
 function el(id) { return document.getElementById(id); }
 
 function toast(msg, type = 'info', duration = 3500) {
-  const icons = { success: '✅', error: '❌', warn: '⚠️', info: 'ℹ️' };
+  const icons = {
+    success: '<i class="fa-solid fa-circle-check" style="color:var(--green)"></i>',
+    error: '<i class="fa-solid fa-circle-xmark" style="color:var(--red)"></i>',
+    warn: '<i class="fa-solid fa-triangle-exclamation" style="color:var(--amber)"></i>',
+    info: '<i class="fa-solid fa-circle-info" style="color:var(--cyan)"></i>'
+  };
   const div = document.createElement('div');
   div.className = `toast toast-${type}`;
-  div.innerHTML = `<span>${icons[type] || 'ℹ️'}</span><span>${msg}</span>`;
+  div.innerHTML = `<span>${icons[type] || icons.info}</span><span>${msg}</span>`;
   const container = el('toast-container');
   if (container) {
     container.appendChild(div);
@@ -82,7 +87,7 @@ function onLoginSuccess(user) {
   // Store authenticated session in localStorage for app.js
   localStorage.setItem('pms_user', JSON.stringify(user));
 
-  toast(`লগইন সফল হয়েছে! স্বাগতম, ${user.displayName || user.email} 🎉`, 'success');
+  toast(`লগইন সফল হয়েছে! স্বাগতম, ${user.displayName || user.email}`, 'success');
 
   // Smooth redirect to main dashboard
   setTimeout(() => {

@@ -157,7 +157,7 @@ function elecAutoSyncBills(silent = true) {
   }
 
   if (!silent) {
-    toast(`রুম ও বিলিং-এ বিদ্যুৎ বিল সফলভাবে আপডেট হয়েছে! ⚡`, 'success');
+    toast(`রুম ও বিলিং-এ বিদ্যুৎ বিল সফলভাবে আপডেট হয়েছে!`, 'success');
   }
 }
 window.elecAutoSyncBills = elecAutoSyncBills;
@@ -197,7 +197,7 @@ function renderSubMeters() {
   if (!container) return;
   const meter = ELEC_STATE.mainMeters[ELEC_STATE.activeMeterIdx];
   if (!meter) {
-    container.innerHTML = `<div class="empty-state"><div class="es-icon">⚡</div><p>আগে একটি মেইন মিটার যুক্ত করুন।</p></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="es-icon"><i class="fa-solid fa-bolt"></i></div><p>আগে একটি মেইন মিটার যুক্ত করুন।</p></div>`;
     return;
   }
   const p = getActiveProperty();
@@ -234,7 +234,7 @@ function renderSubMeters() {
         <input class="form-control submeter-units-val" readonly value="${units} unit"
           style="color:var(--amber);font-weight:700">
       </div>
-      <button class="btn btn-danger btn-sm btn-icon" onclick="elecRemoveSubMeter(${i})" style="margin-bottom:0.5rem" title="মুছে ফেলুন">🗑️</button>
+      <button class="btn btn-danger btn-sm btn-icon" onclick="elecRemoveSubMeter(${i})" style="margin-bottom:0.5rem" title="মুছে ফেলুন"><i class="fa-solid fa-trash-can"></i></button>
     </div>`;
   }).join('') +
   `<button class="btn btn-secondary btn-sm mt-1" onclick="elecAddSubMeter()">+ সাব-মিটার যুক্ত করুন</button>`;
@@ -251,7 +251,7 @@ function renderElecResults(meter) {
 
   if (!totalBill || !totalUnits) {
     resultsEl.innerHTML = `<div style="color:var(--text-muted);font-size:0.82rem;padding:0.5rem;background:rgba(255,255,255,0.03);border-radius:var(--radius-sm)">
-      ℹ️ মেইন মিটারের মোট বিল এবং সাব-মিটারের রিডিং ইনপুট করলেই <strong>স্বয়ংক্রিয়ভাবে রুম ও বিলিং-এ যোগ হবে</strong>।
+      <i class="fa-solid fa-circle-info"></i> মেইন মিটারের মোট বিল এবং সাব-মিটারের রিডিং ইনপুট করলেই <strong>স্বয়ংক্রিয়ভাবে রুম ও বিলিং-এ যোগ হবে</strong>।
     </div>`;
     return;
   }
@@ -269,9 +269,9 @@ function renderElecResults(meter) {
   resultsEl.innerHTML = `
     <div class="elec-result">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
-        <div class="rate">📊 প্রতি ইউনিটের রেট: ${fmt(rate)}/unit</div>
+        <div class="rate"><i class="fa-solid fa-chart-simple"></i> প্রতি ইউনিটের রেট: ${fmt(rate)}/unit</div>
         <div style="font-size:0.75rem;background:rgba(16,185,129,0.15);color:var(--green);padding:0.25rem 0.6rem;border-radius:12px;font-weight:600">
-          ✓ রুম ও বিলিং-এ স্বয়ংক্রিয়ভাবে সিঙ্ক হয়েছে
+          <i class="fa-solid fa-check"></i> রুম ও বিলিং-এ স্বয়ংক্রিয়ভাবে সিঙ্ক হয়েছে
         </div>
       </div>
       <div style="font-size:0.75rem;color:var(--text-muted);margin:0.3rem 0">মোট বিল ${fmt(totalBill)} ÷ মোট ${totalUnits} unit</div>
@@ -286,7 +286,7 @@ function renderElecResults(meter) {
         <tbody>${rows}</tbody>
       </table>
       <button class="btn btn-success btn-sm mt-1" onclick="elecPushBills()" style="width:100%;margin-top:0.75rem">
-        ⚡ চলতি মাসের বিলে রিফ্রেশ ও সিঙ্ক করুন
+        <i class="fa-solid fa-arrows-rotate"></i> চলতি মাসের বিলে রিফ্রেশ ও সিঙ্ক করুন
       </button>
     </div>`;
 }

@@ -260,6 +260,6 @@ window.PMS_FB = {
     fsGet,
     fsDelete
 };
-console.log(`[PMS Firebase] ${IS_FIREBASE_ENABLED ? "🔥 PRODUCTION (Firebase connected)" : "🧪 DEMO MODE  (OTP = 123456)"}`);
+console.log(`[PMS Firebase] ${IS_FIREBASE_ENABLED ? "PRODUCTION (Firebase connected)" : "DEMO MODE (OTP = 123456)"}`);
 
 
