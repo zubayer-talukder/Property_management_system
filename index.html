@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ভাড়া বাড়ি ম্যানেজার | Property Management System</title>
   <meta name="description" content="বাড়ি ভাড়া, ভাড়াটিয়া KYC, বিদ্যুৎ বিল ও মাসিক বিলিং পরিচালনার সম্পূর্ণ সিস্টেম।">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2.2">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
   <!-- Theme Init: Prevent Flash of Wrong Theme (FOUC) -->
   <script>
     (function initTheme() {
       try {
-        const theme = localStorage.getItem('pms_theme') || 'light';
+        const theme = localStorage.getItem('pms_theme') || 'bluish';
         document.documentElement.setAttribute('data-theme', theme);
       } catch (_) {}
     })();
@@ -79,6 +79,11 @@
       <!-- Quick Demo Data Load -->
       <button id="btn-seed-demo" class="btn btn-secondary btn-sm" title="নমুনা ডাটা লোড বা রিসেট করুন"><i
           class="fa-solid fa-wand-magic-sparkles"></i> <span>নমুনা ডাটা</span></button>
+
+      <!-- Cloud Sync Button -->
+      <button id="btn-cloud-sync" class="btn btn-secondary btn-sm" onclick="manualTriggerCloudSync()" title="লোকালহোস্ট ও ক্লাউডের মধ্যে ডাটা সিঙ্ক করুন">
+        <i class="fa-solid fa-rotate"></i> <span>সিঙ্ক করুন</span>
+      </button>
 
       <!-- Auto-Sync Cloud Status Indicator (No manual button pressing needed) -->
       <div id="btn-backup" class="sync-indicator hidden"
@@ -971,19 +976,19 @@
   <!-- ═══════════════════════════════════════════════════════
      SCRIPTS
 ═══════════════════════════════════════════════════════ -->
-  <script src="firebase-config.js"></script>
-  <script src="js/core.js"></script>
-  <script src="js/theme.js"></script>
-  <script src="js/backup.js"></script>
-  <script src="js/demo-data.js"></script>
-  <script src="js/properties.js"></script>
-  <script src="js/tenant-kyc.js"></script>
-  <script src="js/receipt.js"></script>
-  <script src="js/landlord-summary.js"></script>
-  <script src="js/owner-split.js"></script>
-  <script src="electricity.js"></script>
-  <script src="js/rooms.js"></script>
-  <script src="app.js"></script>
+  <script src="firebase-config.js?v=2.2"></script>
+  <script src="js/core.js?v=2.2"></script>
+  <script src="js/theme.js?v=2.2"></script>
+  <script src="js/backup.js?v=2.2"></script>
+  <script src="js/demo-data.js?v=2.2"></script>
+  <script src="js/properties.js?v=2.2"></script>
+  <script src="js/tenant-kyc.js?v=2.2"></script>
+  <script src="js/receipt.js?v=2.2"></script>
+  <script src="js/landlord-summary.js?v=2.2"></script>
+  <script src="js/owner-split.js?v=2.2"></script>
+  <script src="electricity.js?v=2.2"></script>
+  <script src="js/rooms.js?v=2.2"></script>
+  <script src="app.js?v=2.2"></script>
 
 </body>
 

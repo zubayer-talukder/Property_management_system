@@ -154,7 +154,17 @@ async function backupToCloud(ownerUID, payload) {
                 });
             });
         }
-        await fsSet(`owners/${ownerUID}/backup/latest`, { ...safePayload, backedUpAt: new Date().toISOString() });
+        const now = new Date().toISOString();
+        const theme = localStorage.getItem('pms_theme') || 'bluish';
+        const clientId = window._pmsClientId || 'client_' + Date.now();
+        await fsSet(`owners/${ownerUID}/backup/latest`, {
+            ...safePayload,
+            theme,
+            clientId,
+            clientOrigin: window.location.origin,
+            backedUpAt: now
+        });
+        localStorage.setItem('pms_updated_at_' + ownerUID, now);
         return true;
     } catch (err) {
         console.error("backupToCloud error:", err);
@@ -165,6 +175,25 @@ async function backupToCloud(ownerUID, payload) {
 async function restoreFromCloud(ownerUID) {
     if (!IS_FIREBASE_ENABLED) return null;
     return await fsGet(`owners/${ownerUID}/backup/latest`);
+}
+
+async function listenToCloudBackup(ownerUID, callback) {
+    if (!IS_FIREBASE_ENABLED || !ownerUID) return () => {};
+    try {
+        const { db } = await _init();
+        const { doc, onSnapshot } = await import("https://www.gstatic.com/firebasejs/10.14.0/firebase-firestore.js");
+        const unsub = onSnapshot(doc(db, "owners", ownerUID, "backup", "latest"), (docSnap) => {
+            if (docSnap.exists()) {
+                callback(docSnap.data());
+            }
+        }, (err) => {
+            console.warn("Real-time cloud listener error:", err);
+        });
+        return unsub;
+    } catch (e) {
+        console.warn("Failed to attach cloud listener:", e);
+        return () => {};
+    }
 }
 
 /* ── Firebase Storage & KYC Helpers ─────────────────────────── */
@@ -252,6 +281,7 @@ window.PMS_FB = {
     onAuthChange,
     backupToCloud,
     restoreFromCloud,
+    listenToCloudBackup,
     uploadFile,
     saveTenantKYC,
     getTenantKYC,

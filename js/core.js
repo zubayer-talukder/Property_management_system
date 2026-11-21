@@ -54,11 +54,15 @@ function toast(msg, type = 'info', duration = 3500) {
 }
 
 /* ── Persist ────────────────────────────────────────────────── */
+window._pmsClientId = 'client_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+
 function save() {
   if (!STATE.currentUser || !STATE.currentUser.uid) return;
   const userKey = 'pms_v2_' + STATE.currentUser.uid;
+  const now = new Date().toISOString();
   localStorage.setItem(userKey, JSON.stringify({ properties: STATE.properties }));
   localStorage.setItem('pms_v2', JSON.stringify({ properties: STATE.properties }));
+  localStorage.setItem('pms_updated_at_' + STATE.currentUser.uid, now);
   scheduleCloudSync();
 }
 function load() {

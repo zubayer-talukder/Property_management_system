@@ -3,12 +3,12 @@
    Modularized architecture: see css/ folder for modules
    ====================================================== */
 
-@import url('css/variables.css');
-@import url('css/base.css');
-@import url('css/layout.css');
-@import url('css/components.css');
-@import url('css/electricity.css');
-@import url('css/receipt.css');
-@import url('css/landlord-summary.css');
-@import url('css/themes.css');
-@import url('css/print.css');
+@import url('css/variables.css?v=2.2');
+@import url('css/base.css?v=2.2');
+@import url('css/layout.css?v=2.2');
+@import url('css/components.css?v=2.2');
+@import url('css/electricity.css?v=2.2');
+@import url('css/receipt.css?v=2.2');
+@import url('css/landlord-summary.css?v=2.2');
+@import url('css/themes.css?v=2.2');
+@import url('css/print.css?v=2.2');
