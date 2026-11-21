@@ -161,11 +161,44 @@ window.removeTenantImage = function(type) {
   }
 };
 
-window.openTenantModal = function(rid, mode) {
-  const p = getActiveProperty(); if (!p) return;
-  const room = p.rooms.find(r => r.id === rid); if (!room) return;
+window.openTenantModal = function(rid = null, mode = 'add') {
+  const p = getActiveProperty();
+  if (!p) {
+    toast('কোনো প্রপার্টি সিলেক্ট করা নেই।', 'warn');
+    return;
+  }
+  if (!p.rooms || !p.rooms.length) {
+    toast('প্রথমে প্রপার্টিতে "+ রুম যুক্ত করুন" বাটনে ক্লিক করে রুম তৈরি করুন।', 'warn');
+    return;
+  }
+
+  // Determine target room: explicit rid, or first vacant room, or first room
+  let targetRoomId = rid;
+  if (!targetRoomId) {
+    const vacantRoom = p.rooms.find(r => !r.tenant);
+    targetRoomId = vacantRoom ? vacantRoom.id : p.rooms[0].id;
+  }
+
+  const room = p.rooms.find(r => r.id === targetRoomId);
+  if (!room) return;
+
+  // Populate room selection dropdown
+  const roomSelect = el('tenant-room-select');
+  if (roomSelect) {
+    roomSelect.innerHTML = p.rooms.map(r => {
+      const isVac = !r.tenant;
+      return `<option value="${r.id}" ${r.id === targetRoomId ? 'selected' : ''}>রুম ${r.number} ${isVac ? '(খালি)' : '— বর্তমান: ' + r.tenant.name}</option>`;
+    }).join('');
+    roomSelect.disabled = (mode === 'view');
+  }
+
   el('form-tenant').reset();
-  el('form-tenant').dataset.roomId = rid;
+  el('form-tenant').dataset.roomId = targetRoomId;
+
+  // Populate monthly rent field
+  if (el('tenant-monthly-rent')) {
+    el('tenant-monthly-rent').value = room.baseRent || '';
+  }
 
   // Reset actions to keep existing images
   _photoAction = 'keep';
@@ -236,7 +269,7 @@ window.openTenantModal = function(rid, mode) {
 
     // Check Firestore KYC in case image is synced there
     if (window.PMS_FB?.getTenantKYC && STATE.currentUser?.uid && (!t.photo || !t.nidImage)) {
-      window.PMS_FB.getTenantKYC(STATE.currentUser.uid, rid).then(kyc => {
+      window.PMS_FB.getTenantKYC(STATE.currentUser.uid, targetRoomId).then(kyc => {
         if (!kyc) return;
         if (kyc.photo && !t.photo && _photoAction === 'keep') {
           t.photo = kyc.photo;
@@ -249,17 +282,40 @@ window.openTenantModal = function(rid, mode) {
       }).catch(() => {});
     }
 
-    el('tenant-modal-title').innerHTML = `<i class="fa-solid fa-user"></i> ${t.name} — KYC তথ্য`;
-    el('btn-evict').classList.remove('hidden');
+    el('tenant-modal-title').innerHTML = `<i class="fa-solid fa-user"></i> ${t.name} (রুম ${room.number}) — KYC তথ্য`;
+    el('btn-evict')?.classList.remove('hidden');
+    el('btn-switch-add-tenant')?.classList.remove('hidden');
   } else {
-    el('tenant-modal-title').innerHTML = '<i class="fa-solid fa-user-plus"></i> নতুন ভাড়াটিয়া যুক্ত করুন';
-    el('btn-evict').classList.add('hidden');
-    el('tenant-lease-start').value = new Date().toISOString().split('T')[0];
+    const mLabel = monthLabel(STATE.activeMonth || yyyymm(new Date()));
+    el('tenant-modal-title').innerHTML = `<i class="fa-solid fa-user-plus"></i> নতুন ভাড়াটিয়া যুক্ত করুন (${mLabel})`;
+    el('btn-evict')?.classList.add('hidden');
+    el('btn-switch-add-tenant')?.classList.add('hidden');
+
+    // Default lease start date to the active month
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (STATE.activeMonth && todayStr.startsWith(STATE.activeMonth)) {
+      el('tenant-lease-start').value = todayStr;
+    } else if (STATE.activeMonth) {
+      el('tenant-lease-start').value = `${STATE.activeMonth}-01`;
+    } else {
+      el('tenant-lease-start').value = todayStr;
+    }
   }
+
   // Reset tabs
   document.querySelector('[data-tab-group="tenant-tabs"][data-tab-target="tenant-tab-personal"]')?.click();
   openModal('modal-tenant');
 };
+
+el('tenant-room-select')?.addEventListener('change', e => {
+  const selectedId = e.target.value;
+  el('form-tenant').dataset.roomId = selectedId;
+  const p = getActiveProperty();
+  const selectedRoom = p?.rooms.find(r => r.id === selectedId);
+  if (selectedRoom && el('tenant-monthly-rent')) {
+    el('tenant-monthly-rent').value = selectedRoom.baseRent || '';
+  }
+});
 
 el('btn-evict').addEventListener('click', async () => {
   const rid = el('form-tenant').dataset.roomId;
@@ -282,7 +338,7 @@ el('btn-evict').addEventListener('click', async () => {
 el('form-tenant').addEventListener('submit', async e => {
   e.preventDefault();
   const p = getActiveProperty(); if (!p) return;
-  const rid = e.target.dataset.roomId;
+  const rid = el('tenant-room-select')?.value || e.target.dataset.roomId;
   const room = p.rooms.find(r => r.id === rid); if (!room) return;
 
   const submitBtn = e.target.querySelector('button[type="submit"]');
@@ -296,6 +352,12 @@ el('form-tenant').addEventListener('submit', async e => {
     const ownerUID = STATE.currentUser?.uid;
     let finalPhotoUrl = (room.tenant && room.tenant.photo) ? room.tenant.photo : '';
     let finalNidUrl   = (room.tenant && room.tenant.nidImage) ? room.tenant.nidImage : '';
+
+    // Update room base rent if entered in tenant modal
+    const enteredRent = tk(el('tenant-monthly-rent')?.value);
+    if (enteredRent > 0) {
+      room.baseRent = enteredRent;
+    }
 
     // Await photo compression if in progress
     if (_photoAction === 'new' && _photoCompressPromise) {
@@ -362,6 +424,9 @@ el('form-tenant').addEventListener('submit', async e => {
       }
     }
 
+    const activeM = STATE.activeMonth || yyyymm(new Date());
+    const leaseStartDate = el('tenant-lease-start').value || `${activeM}-01`;
+
     const tenant = {
       name:              el('tenant-name').value.trim(),
       phone:             el('tenant-phone').value.trim(),
@@ -376,7 +441,7 @@ el('form-tenant').addEventListener('submit', async e => {
       emergencyPhone:    el('tenant-emg-phone').value.trim(),
       emergencyRelation: el('tenant-emg-rel').value.trim(),
       deposit:           tk(el('tenant-deposit').value),
-      leaseStart:        el('tenant-lease-start').value
+      leaseStart:        leaseStartDate
     };
 
     // Store dedicated KYC record in Firebase Firestore
@@ -394,18 +459,57 @@ el('form-tenant').addEventListener('submit', async e => {
       }
     }
 
+    // Set active tenant on room
     room.tenant = tenant;
 
-    // Populate current month bill with tenant name
-    const b = getBill(room, STATE.activeMonth);
-    b.tenant = tenant.name;
-    b.rent   = b.rent || tk(room.baseRent);
+    // Establish official bill record for active month (e.g. 2026-12)
+    if (!room.bills) room.bills = {};
+    let b = room.bills[activeM];
+    const carriedDue = (typeof calculateCarriedDuesForMonth === 'function')
+      ? calculateCarriedDuesForMonth(room, activeM)
+      : 0;
+
+    if (!b || b.isTransient) {
+      b = {
+        month: activeM,
+        tenant: tenant.name,
+        rent: enteredRent || tk(room.baseRent),
+        electricity: 0,
+        water: tk(room.waterBill),
+        gas: tk(room.gasBill),
+        wifi: tk(room.wifiBill),
+        other: tk(room.otherBill),
+        prevBalance: carriedDue,
+        currentTotal: 0,
+        total: 0,
+        paid: 0,
+        due: 0,
+        advance: 0,
+        paidDate: '',
+        comment: ''
+      };
+      room.bills[activeM] = b;
+    } else {
+      b.tenant = tenant.name;
+      if (enteredRent > 0) b.rent = enteredRent;
+      else if (tk(b.rent) === 0) b.rent = tk(room.baseRent);
+      if (tk(b.water) === 0) b.water = tk(room.waterBill);
+      if (tk(b.gas) === 0) b.gas = tk(room.gasBill);
+      if (tk(b.wifi) === 0) b.wifi = tk(room.wifiBill);
+      if (tk(b.other) === 0) b.other = tk(room.otherBill);
+    }
+    delete b.isTransient;
     recalcBill(b);
 
+    // Save and push immediate cloud sync to Firebase
     save();
+    if (typeof scheduleCloudSync === 'function') {
+      scheduleCloudSync(true);
+    }
+
     closeModal('modal-tenant');
     renderDetailPage();
-    toast(`${tenant.name}-এর KYC ও ছবি Firebase-এ সফলভাবে সংরক্ষিত হয়েছে!`, 'success');
+    toast(`${tenant.name}-এর তথ্য ও ${monthLabel(activeM)}-এর হিসাব Firebase-এ সফলভাবে সংরক্ষিত হয়েছে!`, 'success');
   } catch (err) {
     console.error("Error saving tenant KYC:", err);
     toast('KYC সংরক্ষণে ত্রুটি হয়েছে। পুনরায় চেষ্টা করুন।', 'error');

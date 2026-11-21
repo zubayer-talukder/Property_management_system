@@ -30,12 +30,38 @@ function renderDetailPage() {
   if (typeof updateBackupStatus === 'function') updateBackupStatus();
 }
 
+/* ── Month-aware Tenant & Room Helpers ──────────────────────── */
+function getRoomTenantForMonth(r, m) {
+  if (!r) return null;
+  // 1. If an actual recorded bill exists for month m with a tenant name, use it
+  if (r.bills && r.bills[m] && r.bills[m].tenant && !r.bills[m].isTransient) {
+    if (r.tenant && r.tenant.name === r.bills[m].tenant) {
+      return r.tenant;
+    }
+    return { name: r.bills[m].tenant, phone: '', photo: '' };
+  }
+  // 2. If r.tenant exists
+  if (r.tenant) {
+    if (r.tenant.leaseStart) {
+      const leaseMonth = r.tenant.leaseStart.slice(0, 7);
+      // If browsing a month before tenant's lease started and no older bill exists, room was vacant
+      if (leaseMonth && m < leaseMonth) {
+        return null;
+      }
+    }
+    return r.tenant;
+  }
+  return null;
+}
+window.getRoomTenantForMonth = getRoomTenantForMonth;
+
 function renderMetrics(p) {
   const m = STATE.activeMonth;
   let paid = 0, dueCount = 0, dueAmt = 0, vacant = 0, totalExpected = 0;
 
   p.rooms.forEach(r => {
-    if (!r.tenant) { vacant++; return; }
+    const tenant = getRoomTenantForMonth(r, m);
+    if (!tenant) { vacant++; return; }
     const b = getBill(r, m);
     const total = tk(b.total);
     const due   = tk(b.due);
@@ -60,8 +86,9 @@ function renderRoomsTable(p) {
     return;
   }
   tbody.innerHTML = p.rooms.map(r => {
+    const tenant = getRoomTenantForMonth(r, m);
     const b = getBill(r, m);
-    const isVacant = !r.tenant;
+    const isVacant = !tenant;
     const statusPill = isVacant
       ? `<span class="pill pill-vacant">খালি</span>`
       : b.due <= 0 && b.total > 0
@@ -78,15 +105,15 @@ function renderRoomsTable(p) {
       </td>
       <td>
         ${isVacant
-          ? `<button class="btn btn-success btn-sm" onclick="openTenantModal('${r.id}','add')">+ ভাড়াটিয়া</button>`
+          ? `<button class="btn btn-success btn-sm" onclick="openTenantModal('${r.id}','add')"><i class="fa-solid fa-user-plus"></i> + ভাড়াটিয়া</button>`
           : `<div class="tenant-cell-content">
-              ${r.tenant.photo
-                ? `<img src="${r.tenant.photo}" class="tenant-table-avatar" alt="${r.tenant.name}">`
+              ${tenant.photo
+                ? `<img src="${tenant.photo}" class="tenant-table-avatar" alt="${tenant.name}">`
                 : `<div class="tenant-table-avatar" style="display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,0.15);font-size:0.85rem"><i class="fa-solid fa-user" style="color:var(--accent-light)"></i></div>`
               }
               <div>
-                <div class="tenant-name">${r.tenant.name}</div>
-                <div style="font-size:0.7rem;color:var(--text-muted)">${r.tenant.phone}</div>
+                <div class="tenant-name">${tenant.name}</div>
+                <div style="font-size:0.7rem;color:var(--text-muted)">${tenant.phone || ''}</div>
               </div>
             </div>`}
       </td>
@@ -108,6 +135,7 @@ function renderRoomsTable(p) {
           ${!isVacant ? `<button class="btn btn-secondary btn-sm" onclick="openBillModal('${r.id}')"><i class="fa-solid fa-coins"></i> বিল</button>` : ''}
           ${!isVacant ? `<button class="btn btn-secondary btn-sm" onclick="openTenantModal('${r.id}','view')"><i class="fa-solid fa-user"></i> KYC</button>` : ''}
           ${!isVacant ? `<button class="btn btn-primary btn-sm" onclick="openReceiptModal('${r.id}')" title="মানি রিসিট"><i class="fa-solid fa-receipt"></i> রিসিট</button>` : ''}
+          <button class="btn btn-success btn-sm btn-icon" onclick="openTenantModal('${r.id}','add')" title="এই রুমে নতুন ভাড়াটিয়া যুক্ত করুন"><i class="fa-solid fa-user-plus"></i></button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoom('${r.id}')" title="Delete Room"><i class="fa-solid fa-trash-can"></i></button>
         </div>
       </td>
@@ -164,28 +192,31 @@ function getBill(room, month) {
   if (!room) return null;
   if (!room.bills) room.bills = {};
 
+  const tenant = getRoomTenantForMonth(room, month);
+
   // If this month already has a saved bill, return it directly
   if (room.bills[month]) {
     const b = room.bills[month];
-    if (room.tenant && !b.tenant) b.tenant = room.tenant.name;
+    if (tenant && !b.tenant) b.tenant = tenant.name;
     return b;
   }
 
   // If no saved bill exists, return an in-memory preview without saving or mutating database
-  return makeTransientBill(room, month);
+  return makeTransientBill(room, month, tenant);
 }
 
-function makeTransientBill(room, month) {
-  const baseRent = tk(room.baseRent);
-  const water = tk(room.waterBill);
-  const gas = tk(room.gasBill);
-  const wifi = tk(room.wifiBill);
-  const other = tk(room.otherBill);
+function makeTransientBill(room, month, tenant = null) {
+  const isVacant = !tenant;
+  const baseRent = isVacant ? 0 : tk(room.baseRent);
+  const water = isVacant ? 0 : tk(room.waterBill);
+  const gas = isVacant ? 0 : tk(room.gasBill);
+  const wifi = isVacant ? 0 : tk(room.wifiBill);
+  const other = isVacant ? 0 : tk(room.otherBill);
   const currentTotal = baseRent + water + gas + wifi + other;
 
   return {
     month,
-    tenant: room.tenant?.name || '',
+    tenant: tenant?.name || '',
     rent: baseRent,
     electricity: 0,
     water,
