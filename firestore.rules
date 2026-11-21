@@ -1,0 +1,196 @@
+rules_version = '2';
+
+// ===============================================================
+// Assumed Data Model
+// ===============================================================
+//
+// Application: Property Management System (PMS)
+// Root Isolation: All data is strictly partitioned by Landlord Auth UID ({ownerId}).
+//
+// 1. Owner Profile / Root Document
+//    Path: /owners/{ownerId}
+//    Document ID: {ownerId} (Matches Firebase Authentication UID `request.auth.uid`)
+//    Access: Strictly restricted to the authenticated document owner.
+//
+// 2. Cloud Backup Subcollection
+//    Path: /owners/{ownerId}/backup/{backupId}
+//    Document ID: {backupId} (e.g. 'latest')
+//    Fields:
+//      - properties: list (optional, max 10000 items) - Array of properties, rooms, bills
+//      - theme: string (optional, max 50 chars) - UI theme setting ('bluish', 'light')
+//      - clientId: string (optional, max 150 chars) - Client device identifier
+//      - clientOrigin: string (optional, max 300 chars) - Browser origin
+//      - backedUpAt: string (optional, max 60 chars) - ISO timestamp of backup
+//      - updatedAt: string (optional, max 60 chars) - ISO timestamp of update
+//      - version: string (optional, max 50 chars) - Schema version
+//      - settings: map (optional) - Landlord preferences
+//
+// 3. Tenant KYC Subcollection
+//    Path: /owners/{ownerId}/tenants/{tenantId}
+//    Document ID: {tenantId} (Room ID, e.g. 'r_101')
+//    Fields:
+//      - name: string (optional, max 200 chars) - Tenant full name
+//      - phone: string (optional, max 50 chars) - Tenant contact number
+//      - photo: string (optional, max 850000 chars) - Photo URL or Base64 data URI fallback
+//      - spouseName: string (optional, max 200 chars) - Spouse name
+//      - kidsCount: string or number (optional, max 20 chars or 0-100) - Number of children
+//      - kidsNames: string (optional, max 500 chars) - Names of children
+//      - permanentAddress: string (optional, max 1000 chars) - Permanent address
+//      - nidNumber: string (optional, max 100 chars) - National ID / Passport number
+//      - nidImage: string (optional, max 850000 chars) - NID document URL or Base64 data URI fallback
+//      - emergencyName: string (optional, max 200 chars) - Emergency contact person
+//      - emergencyPhone: string (optional, max 50 chars) - Emergency contact phone
+//      - emergencyRelation: string (optional, max 100 chars) - Relationship with emergency contact
+//      - deposit: number (optional) - Security deposit amount
+//      - leaseStart: string (optional, max 50 chars) - Lease commencement date
+//      - roomId: string (optional, max 100 chars) - Associated room ID
+//      - roomNumber: string (optional, max 100 chars) - Room / Flat display number
+//      - propertyId: string (optional, max 100 chars) - Associated property ID
+//      - propertyName: string (optional, max 200 chars) - Property display name
+//      - updatedAt: string (optional, max 60 chars) - Timestamp of last update
+//
+// 4. Other Subcollections
+//    Path: /owners/{ownerId}/{subcollection}/{docId}
+//    Access: Strictly restricted to the authenticated document owner ({ownerId}).
+//
+// ===============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Global Helper Functions
+    // ===============================================================
+
+    // Check if the user is authenticated via Firebase Auth
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Check if the requesting user matches the targeted owner ID
+    function isOwner(ownerId) {
+      return isAuthenticated() && request.auth.uid == ownerId;
+    }
+
+    // Validate optional string field with length boundary
+    function isValidOptionalString(data, field, maxLen) {
+      return !(field in data) ||
+        (data[field] is string && data[field].size() <= maxLen);
+    }
+
+    // Validate optional numeric field
+    function isValidOptionalNumber(data, field) {
+      return !(field in data) ||
+        data[field] is number;
+    }
+
+    // Validate optional list field with size boundary
+    function isValidOptionalList(data, field, maxSize) {
+      return !(field in data) ||
+        (data[field] is list && data[field].size() <= maxSize);
+    }
+
+    // Validate optional map field
+    function isValidOptionalMap(data, field) {
+      return !(field in data) ||
+        data[field] is map;
+    }
+
+    // Validate kidsCount which may be passed as string from HTML inputs or numeric value
+    function isValidKidsCount(data) {
+      return !('kidsCount' in data) ||
+        (data.kidsCount is string && data.kidsCount.size() <= 20) ||
+        (data.kidsCount is number && data.kidsCount >= 0 && data.kidsCount <= 100);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    // Validator for Cloud Backup payload
+    function isValidBackup(data) {
+      let allowedFields = [
+        'properties', 'theme', 'clientId', 'clientOrigin',
+        'backedUpAt', 'updatedAt', 'version', 'settings'
+      ];
+      return data.keys().hasOnly(allowedFields) &&
+        isValidOptionalList(data, 'properties', 10000) &&
+        isValidOptionalString(data, 'theme', 50) &&
+        isValidOptionalString(data, 'clientId', 150) &&
+        isValidOptionalString(data, 'clientOrigin', 300) &&
+        isValidOptionalString(data, 'backedUpAt', 60) &&
+        isValidOptionalString(data, 'updatedAt', 60) &&
+        isValidOptionalString(data, 'version', 50) &&
+        isValidOptionalMap(data, 'settings');
+    }
+
+    // Validator for Tenant KYC payload
+    function isValidTenantKYC(data) {
+      let allowedFields = [
+        'name', 'phone', 'photo', 'spouseName', 'kidsCount', 'kidsNames',
+        'permanentAddress', 'nidNumber', 'nidImage', 'emergencyName',
+        'emergencyPhone', 'emergencyRelation', 'deposit', 'leaseStart',
+        'roomId', 'roomNumber', 'propertyId', 'propertyName', 'updatedAt'
+      ];
+      return data.keys().hasOnly(allowedFields) &&
+        isValidOptionalString(data, 'name', 200) &&
+        isValidOptionalString(data, 'phone', 50) &&
+        isValidOptionalString(data, 'photo', 850000) &&
+        isValidOptionalString(data, 'spouseName', 200) &&
+        isValidKidsCount(data) &&
+        isValidOptionalString(data, 'kidsNames', 500) &&
+        isValidOptionalString(data, 'permanentAddress', 1000) &&
+        isValidOptionalString(data, 'nidNumber', 100) &&
+        isValidOptionalString(data, 'nidImage', 850000) &&
+        isValidOptionalString(data, 'emergencyName', 200) &&
+        isValidOptionalString(data, 'emergencyPhone', 50) &&
+        isValidOptionalString(data, 'emergencyRelation', 100) &&
+        isValidOptionalNumber(data, 'deposit') &&
+        isValidOptionalString(data, 'leaseStart', 50) &&
+        isValidOptionalString(data, 'roomId', 100) &&
+        isValidOptionalString(data, 'roomNumber', 100) &&
+        isValidOptionalString(data, 'propertyId', 100) &&
+        isValidOptionalString(data, 'propertyName', 200) &&
+        isValidOptionalString(data, 'updatedAt', 60);
+    }
+
+    // ===============================================================
+    // Rules Definitions
+    // ===============================================================
+
+    // Root Landlord Partition: all access is gated by owner UID match
+    match /owners/{ownerId} {
+      // Landlord profile or root document
+      allow read, write: if isOwner(ownerId);
+
+      // Cloud Backup collection (e.g., 'latest')
+      match /backup/{backupId} {
+        allow read, delete: if isOwner(ownerId);
+        allow create, update: if isOwner(ownerId) && isValidBackup(request.resource.data);
+      }
+
+      // Tenant KYC & ID records collection
+      match /tenants/{tenantId} {
+        allow read, delete: if isOwner(ownerId);
+        allow create, update: if isOwner(ownerId) && isValidTenantKYC(request.resource.data);
+      }
+
+      // Any other owner-scoped subcollections (e.g. expenses, meters, properties)
+      // Note: Explicit exclusion of 'backup' and 'tenants' ensures their strict validators cannot be bypassed.
+      match /{subcollection}/{docId} {
+        allow read, delete: if isOwner(ownerId) && !(subcollection in ['backup', 'tenants']);
+        allow create, update: if isOwner(ownerId) && !(subcollection in ['backup', 'tenants']);
+
+        // Deeply nested subcollections under custom owner paths
+        match /{allChildren=**} {
+          allow read, write: if isOwner(ownerId) && !(subcollection in ['backup', 'tenants']);
+        }
+      }
+    }
+
+    // Default Deny: All other unmatched root collections or paths are blocked
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

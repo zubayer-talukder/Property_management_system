@@ -118,6 +118,8 @@ initThemeToggle();
 function onLoginSuccess(user) {
   // Store authenticated session in localStorage for app.js
   localStorage.setItem('pms_user', JSON.stringify(user));
+  // Purge legacy shared cache on login so no cross-user data bleeding can occur
+  try { localStorage.removeItem('pms_v2'); } catch (_) {}
 
   toast(`লগইন সফল হয়েছে! স্বাগতম, ${user.displayName || user.email}`, 'success');
 

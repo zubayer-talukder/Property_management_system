@@ -3,10 +3,22 @@
    Modularized architecture: see js/ folder for components
    ====================================================== */
 
-/* ======================================================
-   Property Management System — Main Application Entry Point
-   Modularized architecture: see js/ folder for components
-   ====================================================== */
+/* ── Ownership & Account Isolation ──────────────────────────── */
+function isPropertyOwnedByUser(p, user) {
+  if (!p || !user) return false;
+  const userTokens = [
+    (user.displayName || '').toLowerCase().trim(),
+    (user.email || '').toLowerCase().trim(),
+    user.uid
+  ].filter(Boolean);
+
+  if (!Array.isArray(p.owners) || p.owners.length === 0) return true;
+
+  return p.owners.some(owner => {
+    const oLower = String(owner).toLowerCase().trim();
+    return userTokens.some(tok => tok && (oLower.includes(tok) || tok.includes(oLower)));
+  });
+}
 
 /* ── Cloud Sync Engine ──────────────────────────────────────── */
 function calculatePropertiesWeight(props) {
@@ -32,36 +44,56 @@ async function performInitialCloudSync(uid) {
     const txtEl = el('backup-status-txt');
     if (txtEl) txtEl.innerHTML = '<i class="fa-solid fa-rotate fa-spin" style="color:var(--amber)"></i> Cloud থেকে সর্বাধুনিক ডাটা সিঙ্ক হচ্ছে...';
 
+    // 1. Sanitize local properties to ensure no data from previous user leaked into memory
+    STATE.properties = (STATE.properties || []).filter(p => isPropertyOwnedByUser(p, STATE.currentUser));
+
     const cloudData = await window.PMS_FB.restoreFromCloud(uid);
 
     if (!cloudData || !Array.isArray(cloudData.properties) || cloudData.properties.length === 0) {
-      // Cloud is empty, but local has data: push local to Cloud immediately
+      // Cloud is empty for this user account:
+      // If user has local properties legitimately owned by them, push to Cloud
       if (STATE.properties && STATE.properties.length > 0) {
         scheduleCloudSync(true);
+      } else {
+        STATE.properties = [];
+        renderPropertiesPage();
       }
       updateBackupStatus();
       return;
     }
 
+    // 2. Strict Account Isolation: Verify properties in cloud legitimately belong to this user
+    let validCloudProps = cloudData.properties.filter(p => isPropertyOwnedByUser(p, STATE.currentUser));
+
+    // If cloud had properties but NONE belong to this user (cross-user contamination from shared device bug):
+    if (cloudData.properties.length > 0 && validCloudProps.length === 0) {
+      console.warn(`[PMS Auth] Detected contaminated data belonging to another user. Resetting to clean account for ${STATE.currentUser.displayName}`);
+      validCloudProps = [];
+      STATE.properties = [];
+      const userKey = 'pms_v2_' + uid;
+      localStorage.setItem(userKey, JSON.stringify({ properties: [] }));
+      localStorage.removeItem('pms_v2');
+      await window.PMS_FB.backupToCloud(uid, { properties: [] });
+      renderPropertiesPage();
+      updateBackupStatus();
+      return;
+    }
+
     const localWeight = calculatePropertiesWeight(STATE.properties);
-    const cloudWeight = calculatePropertiesWeight(cloudData.properties);
+    const cloudWeight = calculatePropertiesWeight(validCloudProps);
 
     const localUpdatedAt = localStorage.getItem('pms_updated_at_' + uid) || '';
     const cloudUpdatedAt = cloudData.backedUpAt || '';
 
-    // Should we adopt cloud data?
-    // 1. Cloud has richer data (more occupied rooms/tenants/bills)
-    // 2. Local is empty
-    // 3. Or Cloud is strictly newer
     const shouldPull = (cloudWeight > localWeight) ||
                        (!STATE.properties.length) ||
                        (cloudWeight === localWeight && cloudUpdatedAt > localUpdatedAt);
 
     if (shouldPull) {
-      STATE.properties = cloudData.properties;
+      STATE.properties = validCloudProps;
       const userKey = 'pms_v2_' + uid;
       localStorage.setItem(userKey, JSON.stringify({ properties: STATE.properties }));
-      localStorage.setItem('pms_v2', JSON.stringify({ properties: STATE.properties }));
+      localStorage.removeItem('pms_v2');
       localStorage.setItem('pms_updated_at_' + uid, cloudUpdatedAt || new Date().toISOString());
 
       if (cloudData.theme && typeof window.applyTheme === 'function') {
@@ -71,9 +103,8 @@ async function performInitialCloudSync(uid) {
       renderPropertiesPage();
       if (STATE.activePropertyId) renderDetailPage();
       updateBackupStatus();
-      toast('Cloud থেকে সর্বশেষ ডাটা সফলভাবে সিঙ্ক হয়েছে!', 'success', 2500);
+      toast('Cloud থেকে আপনার অ্যাকাউন্টের ডাটা সফলভাবে সিঙ্ক হয়েছে!', 'success', 2500);
     } else if (localWeight > cloudWeight) {
-      // Local has more complete data (e.g. from localhost edits): push to Cloud!
       scheduleCloudSync(true);
       updateBackupStatus();
     } else {
@@ -98,16 +129,20 @@ function setupRealtimeCloudListener(uid) {
     // Ignore echoes from this exact tab/client
     if (cloudData.clientId === window._pmsClientId) return;
 
+    // Strict account isolation: verify properties belong to this user
+    const validCloudProps = cloudData.properties.filter(p => isPropertyOwnedByUser(p, STATE.currentUser));
+    if (cloudData.properties.length > 0 && validCloudProps.length === 0) return;
+
     const localWeight = calculatePropertiesWeight(STATE.properties);
-    const cloudWeight = calculatePropertiesWeight(cloudData.properties);
+    const cloudWeight = calculatePropertiesWeight(validCloudProps);
     const localUpdatedAt = localStorage.getItem('pms_updated_at_' + uid) || '';
     const cloudUpdatedAt = cloudData.backedUpAt || '';
 
     if (cloudWeight >= localWeight || cloudUpdatedAt > localUpdatedAt) {
-      STATE.properties = cloudData.properties;
+      STATE.properties = validCloudProps;
       const userKey = 'pms_v2_' + uid;
       localStorage.setItem(userKey, JSON.stringify({ properties: STATE.properties }));
-      localStorage.setItem('pms_v2', JSON.stringify({ properties: STATE.properties }));
+      localStorage.removeItem('pms_v2');
       localStorage.setItem('pms_updated_at_' + uid, cloudUpdatedAt || new Date().toISOString());
 
       if (cloudData.theme && typeof window.applyTheme === 'function') {
@@ -162,6 +197,7 @@ async function init() {
     window.PMS_FB.onAuthChange((fbUser) => {
       if (!fbUser && isLoggedIn() && STATE.currentUser?.provider === 'google') {
         localStorage.removeItem('pms_user');
+        localStorage.removeItem('pms_v2');
         window.location.replace('login.html');
       }
     });

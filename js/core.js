@@ -61,7 +61,8 @@ function save() {
   const userKey = 'pms_v2_' + STATE.currentUser.uid;
   const now = new Date().toISOString();
   localStorage.setItem(userKey, JSON.stringify({ properties: STATE.properties }));
-  localStorage.setItem('pms_v2', JSON.stringify({ properties: STATE.properties }));
+  // Strictly user-scoped storage: never write to legacy shared 'pms_v2'
+  localStorage.removeItem('pms_v2');
   localStorage.setItem('pms_updated_at_' + STATE.currentUser.uid, now);
   scheduleCloudSync();
 }
@@ -88,9 +89,12 @@ function load() {
     return;
   }
 
+  // Purge legacy shared key so another user's data cannot contaminate this session
+  try { localStorage.removeItem('pms_v2'); } catch (_) {}
+
   try {
     const userKey = 'pms_v2_' + STATE.currentUser.uid;
-    const raw = localStorage.getItem(userKey) || localStorage.getItem('pms_v2');
+    const raw = localStorage.getItem(userKey);
     if (raw) {
       const parsed = JSON.parse(raw);
       STATE.properties = parsed.properties || [];
@@ -242,6 +246,7 @@ el('btn-logout')?.addEventListener('click', async () => {
   if (!confirm('আপনি কি ওনার অ্যাকাউন্ট থেকে লগআউট করতে চান?')) return;
   try { if (window.PMS_FB?.logOut) await window.PMS_FB.logOut(); } catch (_) {}
   localStorage.removeItem('pms_user');
+  localStorage.removeItem('pms_v2');
   STATE.currentUser = null;
   STATE.activePropertyId = null;
   STATE.properties = [];
