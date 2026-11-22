@@ -205,6 +205,8 @@
 .receipt-qr-img {
   width: 175px;
   height: 175px;
+  object-fit: contain;
+  object-position: center;
   border-radius: 10px;
   border: 2px solid #e11d48;
   background: #ffffff;
@@ -405,6 +407,8 @@
 .ps-qr-image {
   width: 220px;
   height: 220px;
+  object-fit: contain;
+  object-position: center;
   border: 2.5px solid #e11d48;
   border-radius: 12px;
   padding: 6px;

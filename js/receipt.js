@@ -55,31 +55,135 @@ function getBillPaymentConfig(b) {
   return { gw, qrSrc, isCustom, gwKey };
 }
 
-// Compress uploaded custom QR to lightweight Base64 JPEG (under 60KB)
+// Compress and Auto-Crop uploaded custom QR (even from full-screen mobile screenshots)
 window.compressQrImageFile = function(file, callback) {
   if (!file) return;
   const reader = new FileReader();
   reader.onload = function(e) {
     const img = new Image();
     img.onload = function() {
-      const maxDim = 520;
-      let w = img.width;
-      let h = img.height;
-      if (w > maxDim || h > maxDim) {
-        if (w > h) {
-          h = Math.round((h * maxDim) / w);
-          w = maxDim;
-        } else {
-          w = Math.round((w * maxDim) / h);
-          h = maxDim;
+      const origW = img.width;
+      const origH = img.height;
+
+      // Intelligent QR detection and Auto-Crop if jsQR is loaded
+      if (typeof window.jsQR === 'function') {
+        try {
+          const maxScanDim = 1200;
+          let scanW = origW;
+          let scanH = origH;
+          if (scanW > maxScanDim || scanH > maxScanDim) {
+            if (scanW > scanH) {
+              scanH = Math.round((scanH * maxScanDim) / scanW);
+              scanW = maxScanDim;
+            } else {
+              scanW = Math.round((scanW * maxScanDim) / scanH);
+              scanH = maxScanDim;
+            }
+          }
+
+          const scanCanvas = document.createElement('canvas');
+          scanCanvas.width = scanW;
+          scanCanvas.height = scanH;
+          const scanCtx = scanCanvas.getContext('2d');
+          scanCtx.drawImage(img, 0, 0, scanW, scanH);
+          const imgData = scanCtx.getImageData(0, 0, scanW, scanH);
+
+          const qrCode = window.jsQR(imgData.data, scanW, scanH, {
+            inversionAttempts: 'attemptBoth'
+          });
+
+          if (qrCode && qrCode.location) {
+            const scaleX = origW / scanW;
+            const scaleY = origH / scanH;
+
+            const pts = [
+              qrCode.location.topLeftCorner,
+              qrCode.location.topRightCorner,
+              qrCode.location.bottomRightCorner,
+              qrCode.location.bottomLeftCorner
+            ];
+
+            const minX = Math.min(...pts.map(p => p.x)) * scaleX;
+            const maxX = Math.max(...pts.map(p => p.x)) * scaleX;
+            const minY = Math.min(...pts.map(p => p.y)) * scaleY;
+            const maxY = Math.max(...pts.map(p => p.y)) * scaleY;
+
+            const qrW = maxX - minX;
+            const qrH = maxY - minY;
+
+            // Safe Quiet Zone padding (10% standard margin around the QR code matrix)
+            const pad = Math.round(Math.max(qrW, qrH) * 0.10);
+
+            const cropX = Math.max(0, Math.floor(minX - pad));
+            const cropY = Math.max(0, Math.floor(minY - pad));
+            const cropW = Math.min(origW - cropX, Math.ceil(qrW + pad * 2));
+            const cropH = Math.min(origH - cropY, Math.ceil(qrH + pad * 2));
+
+            // Render into a pristine 540x540 high-contrast square canvas
+            const outCanvas = document.createElement('canvas');
+            outCanvas.width = 540;
+            outCanvas.height = 540;
+            const outCtx = outCanvas.getContext('2d', { willReadFrequently: false });
+            outCtx.fillStyle = '#ffffff';
+            outCtx.fillRect(0, 0, 540, 540);
+            outCtx.imageSmoothingEnabled = true;
+            outCtx.imageSmoothingQuality = 'high';
+
+            const innerPad = 16;
+            outCtx.drawImage(img, cropX, cropY, cropW, cropH, innerPad, innerPad, 540 - innerPad * 2, 540 - innerPad * 2);
+
+            const dataUrl = outCanvas.toDataURL('image/jpeg', 0.92);
+
+            // Check if amount is inside Tag 54 of EMVCo Bangla QR payload
+            let detectedAmt = '';
+            if (qrCode.data) {
+              const amtMatch = qrCode.data.match(/54(\d{2})([0-9.]+)/);
+              if (amtMatch) {
+                const len = parseInt(amtMatch[1], 10);
+                detectedAmt = amtMatch[2].slice(0, len);
+              }
+            }
+
+            if (typeof toast === 'function') {
+              if (detectedAmt) {
+                toast(`✓ স্ক্রিনশট থেকে কিউআর ক্রপ করা হয়েছে (টাকার পরিমাণ: ৳${detectedAmt})!`, 'success');
+              } else {
+                toast('✓ স্ক্রিনশট থেকে কিউআর কোড স্বয়ংক্রিয়ভাবে ক্রপ ও জুম করা হয়েছে!', 'success');
+              }
+            }
+            callback(dataUrl);
+            return;
+          }
+        } catch (err) {
+          console.warn('Auto-crop QR error, falling back to standard fit:', err);
         }
       }
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+      // Fallback: draw centered with proper aspect ratio onto a square canvas so it never stretches
+      const outCanvas = document.createElement('canvas');
+      const targetSize = 520;
+      outCanvas.width = targetSize;
+      outCanvas.height = targetSize;
+      const outCtx = outCanvas.getContext('2d');
+      outCtx.fillStyle = '#ffffff';
+      outCtx.fillRect(0, 0, targetSize, targetSize);
+
+      let drawW, drawH;
+      if (origW > origH) {
+        drawW = targetSize;
+        drawH = Math.round((origH * targetSize) / origW);
+      } else {
+        drawH = targetSize;
+        drawW = Math.round((origW * targetSize) / origH);
+      }
+      const offX = Math.round((targetSize - drawW) / 2);
+      const offY = Math.round((targetSize - drawH) / 2);
+
+      outCtx.imageSmoothingEnabled = true;
+      outCtx.imageSmoothingQuality = 'high';
+      outCtx.drawImage(img, offX, offY, drawW, drawH);
+
+      const dataUrl = outCanvas.toDataURL('image/jpeg', 0.90);
       callback(dataUrl);
     };
     img.src = e.target.result;
