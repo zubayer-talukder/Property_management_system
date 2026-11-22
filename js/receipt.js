@@ -191,62 +191,71 @@ window.compressQrImageFile = function(file, callback) {
   reader.readAsDataURL(file);
 };
 
-/* ── WhatsApp Sharing & Web Share API ───────────────────────── */
-async function getQrFileFromSrc(qrSrc, fileName = 'payment-qr.png') {
+/* ── WhatsApp Sharing & Clipboard Image Copying ───────────────────────── */
+async function copyActiveQrImageToClipboard(customSrc) {
+  if (!navigator.clipboard || !window.ClipboardItem) return false;
   try {
-    if (!qrSrc) return null;
-    if (qrSrc.startsWith('data:')) {
-      const parts = qrSrc.split(',');
-      const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
-      const bstr = atob(parts[1]);
-      let n = bstr.length;
-      const u8arr = new Uint8Array(n);
-      while (n--) {
-        u8arr[n] = bstr.charCodeAt(n);
-      }
-      return new File([u8arr], fileName, { type: mime });
+    const imgEl = el('ps-qr-image') || el('receipt-qr-img');
+    const src = customSrc || imgEl?.src;
+    if (!src) return false;
+
+    let pngBlob = null;
+    // 1. If DOM image is rendered and loaded, capture directly
+    if (imgEl && imgEl.complete && imgEl.naturalWidth > 0 && (!customSrc || imgEl.src === customSrc || customSrc.startsWith('data:'))) {
+      const canvas = document.createElement('canvas');
+      canvas.width = imgEl.naturalWidth || 450;
+      canvas.height = imgEl.naturalHeight || 450;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(imgEl, 0, 0, canvas.width, canvas.height);
+      pngBlob = await new Promise(r => canvas.toBlob(r, 'image/png'));
     } else {
-      const res = await fetch(qrSrc);
-      const blob = await res.blob();
-      return new File([blob], fileName, { type: blob.type || 'image/png' });
+      // 2. Otherwise load image from src
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = src;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width || 450;
+      canvas.height = img.height || 450;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pngBlob = await new Promise(r => canvas.toBlob(r, 'image/png'));
     }
-  } catch (e) {
-    console.warn('Error creating file from QR src:', e);
-    return null;
+
+    if (!pngBlob) return false;
+
+    // Must be called while window/document is focused
+    await navigator.clipboard.write([
+      new ClipboardItem({ 'image/png': pngBlob })
+    ]);
+    return true;
+  } catch (err) {
+    console.warn('copyActiveQrImageToClipboard error:', err);
+    return false;
   }
 }
 
-async function copyImageToClipboard(imgFile) {
-  if (!navigator.clipboard || !window.ClipboardItem) return false;
-  try {
-    if (imgFile.type === 'image/png') {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': imgFile })
-      ]);
-      return true;
-    }
-    // Convert jpeg/other to png blob via canvas
-    const img = new Image();
-    img.src = URL.createObjectURL(imgFile);
-    await new Promise(r => { img.onload = r; });
-    const canvas = document.createElement('canvas');
-    canvas.width = img.width;
-    canvas.height = img.height;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(img, 0, 0);
-    const pngBlob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-    URL.revokeObjectURL(img.src);
-    if (pngBlob) {
-      await navigator.clipboard.write([
-        new ClipboardItem({ 'image/png': pngBlob })
-      ]);
-      return true;
-    }
-  } catch (err) {
-    console.debug('Clipboard write image ignored:', err);
+window.copyCurrentQrImage = async function() {
+  const p = getActiveProperty();
+  const rid = STATE.activeReceiptRoomId;
+  const room = p?.rooms?.find(r => r.id === rid);
+  const b = room ? getBill(room, STATE.activeMonth) : null;
+  const { qrSrc } = getBillPaymentConfig(b);
+
+  const ok = await copyActiveQrImageToClipboard(qrSrc);
+  if (ok) {
+    toast('✓ QR ছবি সফলভাবে কপি হয়েছে! যেকোনো চ্যাটে Ctrl+V চেপে পেস্ট করুন।', 'success', 4000);
+  } else {
+    toast('ছবি কপি করা যায়নি। "QR ছবি সেভ" দিয়ে ডাউনলোড করে নিন।', 'warn');
   }
-  return false;
-}
+};
 
 async function shareBillWhatsApp(room, bill, prop) {
   if (!room.tenant?.phone) { toast('ভাড়াটিয়ার ফোন নম্বর নেই।', 'warn'); return; }
@@ -279,19 +288,21 @@ ${tk(bill.other) > 0 ? `• অন্যান্য চার্জ: ৳${tk(bi
 পরিশোধিত: ৳${tk(bill.paid).toLocaleString('en-IN')}
 ${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*অতিরিক্ত জমা (পরবর্তী মাসে সমন্বয় হবে): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `নোট: ${bill.comment}\n` : ''}${payMsg}ধন্যবাদ!`;
 
-  const fileName = `${gw.shortName.toLowerCase()}-qr-room-${room.number}.png`;
-  const qrFile = await getQrFileFromSrc(qrSrc, fileName);
-
-  // Copy QR picture to clipboard so landlord can simply press Ctrl+V to attach it in WhatsApp
-  if (qrFile) {
-    copyImageToClipboard(qrFile).then(copied => {
-      if (copied) {
-        toast('✓ QR ছবি কপি হয়েছে! চ্যাটে Ctrl+V চেপে পেস্ট করুন।', 'success', 4500);
-      }
-    });
+  // 1. Copy QR picture to clipboard FIRST while current page is 100% focused!
+  let copied = false;
+  try {
+    copied = await copyActiveQrImageToClipboard(qrSrc);
+  } catch (e) {
+    console.warn('Auto copy failed:', e);
   }
 
-  // Open direct WhatsApp chat with the tenant's exact phone number
+  if (copied) {
+    toast('✓ QR ছবি ক্লিপবোর্ডে কপি হয়েছে! WhatsApp এ Ctrl+V চেপে পেস্ট করুন।', 'success', 5000);
+  } else {
+    toast('WhatsApp ওপেন হচ্ছে... (ছবি কপি করতে "QR ছবি কপি" বাটন ব্যবহার করুন)', 'info', 4000);
+  }
+
+  // 2. Then open direct WhatsApp chat with tenant's number
   const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }

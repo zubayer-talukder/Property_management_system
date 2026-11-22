@@ -806,6 +806,7 @@
         <button type="button" class="btn btn-secondary" data-close-modal="modal-payment-slip">বন্ধ করুন</button>
         <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
           <a id="ps-btn-download-qr" href="assets/bkash-qr-matrix.png" download="payment-qr.png" class="btn btn-outline-pink btn-sm"><i class="fa-solid fa-download"></i> QR ছবি সেভ</a>
+          <button type="button" class="btn btn-outline-pink btn-sm" id="ps-btn-copy-qr" onclick="copyCurrentQrImage()"><i class="fa-solid fa-copy"></i> QR ছবি কপি</button>
           <button type="button" class="btn btn-success btn-sm" id="ps-btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp-এ পাঠান</button>
           <button type="button" class="btn btn-primary btn-sm" onclick="printPaymentSlip()"><i class="fa-solid fa-print"></i> স্লিপ প্রিন্ট / PDF</button>
         </div>
