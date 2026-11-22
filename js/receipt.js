@@ -17,7 +17,7 @@ ${tk(bill.other) > 0 ? `• অন্যান্য চার্জ: ৳${tk(bi
 পরিশোধিত: ৳${tk(bill.paid).toLocaleString('en-IN')}
 ${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*অতিরিক্ত জমা (পরবর্তী মাসে সমন্বয় হবে): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `নোট: ${bill.comment}\n` : ''}--------------------------------
 ${payableAmt > 0 ? `📲 *বিকাশ পেমেন্ট (Send Money):*
-• বিকাশ পার্সোনাল: *01533958357*
+• বিকাশ পার্সোনাল: *01521752871*
 • প্রদেয় টাকার পরিমাণ: *৳${payableAmt.toLocaleString('en-IN')}*
 • রেফারেন্স: *রুম ${room.number}*
 (বিকাশ বা ব্যাংক অ্যাপের বাংলা QR কোড স্ক্যান করেও দিতে পারবেন)
@@ -234,13 +234,13 @@ window.printPaymentSlip = function() {
 
 window.copyBkashNumber = function() {
   if (navigator.clipboard) {
-    navigator.clipboard.writeText('01533958357').then(() => {
-      toast('বিকাশ নম্বর 01533958357 কপি হয়েছে!', 'success');
+    navigator.clipboard.writeText('01521752871').then(() => {
+      toast('বিকাশ নম্বর 01521752871 কপি হয়েছে!', 'success');
     }).catch(() => {
-      toast('বিকাশ নম্বর: 01533958357', 'info');
+      toast('বিকাশ নম্বর: 01521752871', 'info');
     });
   } else {
-    toast('বিকাশ নম্বর: 01533958357', 'info');
+    toast('বিকাশ নম্বর: 01521752871', 'info');
   }
 };
 

@@ -567,7 +567,7 @@
             <div class="receipt-qr-media">
               <div class="receipt-qr-header-tag"><i class="fa-solid fa-qrcode"></i> BANGLA QR</div>
               <img src="assets/bkash-qr-matrix.png" alt="bKash Bangla QR" class="receipt-qr-img" />
-              <div class="receipt-qr-sublabel"><strong>01533958357</strong> (সেন্ড মানি)</div>
+              <div class="receipt-qr-sublabel"><strong>01521752871</strong> (সেন্ড মানি)</div>
             </div>
             <div class="receipt-qr-info">
               <div class="receipt-qr-badge">
@@ -581,7 +581,10 @@
               <div class="receipt-qr-grid">
                 <div>
                   <span class="qg-lbl">বিকাশ পার্সোনাল নম্বর:</span>
-                  <strong class="qg-val text-pink">01533958357</strong>
+                  <div style="display:flex;align-items:center;gap:0.35rem">
+                    <strong class="qg-val text-pink">01521752871</strong>
+                    <button type="button" class="btn-copy-num" onclick="copyBkashNumber()" title="কপি"><i class="fa-solid fa-copy"></i></button>
+                  </div>
                 </div>
                 <div>
                   <span class="qg-lbl">রেফারেন্স (Ref Code):</span>
@@ -686,7 +689,7 @@
               <div class="ps-info-row">
                 <span class="ps-i-lbl">বিকাশ পার্সোনাল নম্বর:</span>
                 <div style="display:flex;align-items:center;gap:0.4rem">
-                  <span class="ps-i-val ps-bkash-num">01533958357</span>
+                  <span class="ps-i-val ps-bkash-num">01521752871</span>
                   <button type="button" class="btn-copy-num" onclick="copyBkashNumber()" title="নম্বর কপি করুন"><i class="fa-solid fa-copy"></i></button>
                 </div>
               </div>
@@ -702,7 +705,7 @@
                 <strong>কিভাবে পেমেন্ট করবেন?</strong>
                 <ol>
                   <li>বিকাশ অ্যাপ ওপেন করে <strong>"কিউআর স্ক্যান"</strong> অপশনে যান।</li>
-                  <li>পাশের বাংলা QR স্ক্যান করুন অথবা <strong>01533958357</strong> নম্বরে সেন্ড মানি করুন।</li>
+                  <li>পাশের বাংলা QR স্ক্যান করুন অথবা <strong>01521752871</strong> নম্বরে সেন্ড মানি করুন।</li>
                   <li>অ্যামাউন্টে ঠিক <strong><span id="ps-step-amt">৳০</span></strong> লিখুন।</li>
                   <li>রেফারেন্সে <strong><span id="ps-step-ref">রুম নং</span></strong> লিখে পিন দিয়ে কনফার্ম করুন।</li>
                 </ol>
@@ -719,7 +722,7 @@
       <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
         <button type="button" class="btn btn-secondary" data-close-modal="modal-payment-slip">বন্ধ করুন</button>
         <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
-          <a href="assets/bkash-qr-matrix.png" download="bkash-bangla-qr-01533958357.png" class="btn btn-outline-pink btn-sm"><i class="fa-solid fa-download"></i> QR ছবি সেভ</a>
+          <a href="assets/bkash-qr-matrix.png" download="bkash-bangla-qr-01521752871.png" class="btn btn-outline-pink btn-sm"><i class="fa-solid fa-download"></i> QR ছবি সেভ</a>
           <button type="button" class="btn btn-success btn-sm" id="ps-btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp-এ পাঠান</button>
           <button type="button" class="btn btn-primary btn-sm" onclick="printPaymentSlip()"><i class="fa-solid fa-print"></i> স্লিপ প্রিন্ট / PDF</button>
         </div>
