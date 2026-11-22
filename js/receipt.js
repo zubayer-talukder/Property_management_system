@@ -3,6 +3,8 @@ function shareBillWhatsApp(room, bill, prop) {
   if (!room.tenant?.phone) { toast('ভাড়াটিয়ার ফোন নম্বর নেই।', 'warn'); return; }
   const cleanPhone = room.tenant.phone.replace(/[^0-9]/g, '');
   const intlPhone = cleanPhone.startsWith('880') ? cleanPhone : cleanPhone.startsWith('0') ? '88' + cleanPhone : '880' + cleanPhone;
+  const payableAmt = tk(bill.due) > 0 ? tk(bill.due) : (tk(bill.paid) === 0 ? tk(bill.total) : 0);
+
   const msg = `*বাড়ি ভাড়া ও ইউটিলিটি বিল — ${monthLabel(bill.month)}*
 *${prop.name}* (রুম নং: *${room.number}*)
 ভাড়াটিয়া: *${room.tenant.name}*
@@ -14,7 +16,12 @@ ${tk(bill.other) > 0 ? `• অন্যান্য চার্জ: ৳${tk(bi
 *সর্বমোট বিল: ৳${tk(bill.total).toLocaleString('en-IN')}*
 পরিশোধিত: ৳${tk(bill.paid).toLocaleString('en-IN')}
 ${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*অতিরিক্ত জমা (পরবর্তী মাসে সমন্বয় হবে): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `নোট: ${bill.comment}\n` : ''}--------------------------------
-ধন্যবাদ!`;
+${payableAmt > 0 ? `📲 *বিকাশ পেমেন্ট (Send Money):*
+• বিকাশ পার্সোনাল: *01533958357*
+• প্রদেয় টাকার পরিমাণ: *৳${payableAmt.toLocaleString('en-IN')}*
+• রেফারেন্স: *রুম ${room.number}*
+(বিকাশ বা ব্যাংক অ্যাপের বাংলা QR কোড স্ক্যান করেও দিতে পারবেন)
+--------------------------------\n` : ''}ধন্যবাদ!`;
   const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
@@ -153,8 +160,88 @@ window.openReceiptModal = function(rid) {
     el('receipt-amount-words').textContent = wordStr;
   }
 
+  // Populate bKash Bangla QR details inside Money Receipt
+  const payableAmt = tk(b.due) > 0 ? tk(b.due) : (tk(b.paid) === 0 ? tk(b.total) : 0);
+  if (el('receipt-qr-payable-amt')) el('receipt-qr-payable-amt').textContent = fmt(payableAmt > 0 ? payableAmt : b.total);
+  if (el('receipt-qr-ref')) el('receipt-qr-ref').textContent = `রুম নং: ${room.number}`;
+
+  if (el('receipt-btn-open-slip')) {
+    el('receipt-btn-open-slip').onclick = () => {
+      closeModal('modal-receipt');
+      openPaymentSlipModal(rid);
+    };
+  }
+
   el('receipt-btn-whatsapp').onclick = () => shareBillWhatsApp(room, b, p);
   openModal('modal-receipt');
+};
+
+/* ── Dedicated bKash Bangla QR Payment Slip ───────────────────── */
+window.openPaymentSlipModal = function(rid) {
+  const p = getActiveProperty(); if (!p) return;
+  const room = p.rooms.find(r => r.id === rid); if (!room) return;
+  const b = getBill(room, STATE.activeMonth);
+
+  STATE.activeReceiptRoomId = rid;
+
+  if (el('ps-prop-name')) el('ps-prop-name').textContent = p.name;
+  if (el('ps-prop-addr')) el('ps-prop-addr').textContent = p.address;
+  if (el('ps-month-display')) el('ps-month-display').textContent = monthLabel(STATE.activeMonth);
+  if (el('ps-room-no')) el('ps-room-no').textContent = room.number;
+  if (el('ps-tenant-name')) el('ps-tenant-name').textContent = room.tenant?.name || '—';
+  if (el('ps-tenant-phone')) el('ps-tenant-phone').textContent = room.tenant?.phone || '—';
+
+  const payableAmt = tk(b.due) > 0 ? tk(b.due) : (tk(b.paid) === 0 ? tk(b.total) : 0);
+  const displayAmt = payableAmt > 0 ? payableAmt : b.total;
+
+  if (el('ps-payable-amt')) el('ps-payable-amt').textContent = fmt(displayAmt);
+  if (el('ps-step-amt')) el('ps-step-amt').textContent = fmt(displayAmt);
+  if (el('ps-ref-val')) el('ps-ref-val').textContent = `রুম নং: ${room.number}`;
+  if (el('ps-step-ref')) el('ps-step-ref').textContent = `রুম ${room.number}`;
+
+  if (el('ps-amt-breakdown-note')) {
+    if (tk(b.due) > 0 && tk(b.paid) > 0) {
+      el('ps-amt-breakdown-note').textContent = `মোট বিল ${fmt(b.total)} - পরিশোধিত ${fmt(b.paid)} = অবশিষ্ট বকেয়া`;
+    } else {
+      el('ps-amt-breakdown-note').textContent = `ভাড়া + বিদ্যুৎ/ইউটিলিটি চার্জ`;
+    }
+  }
+
+  if (el('ps-btn-whatsapp')) {
+    el('ps-btn-whatsapp').onclick = () => shareBillWhatsApp(room, b, p);
+  }
+
+  openModal('modal-payment-slip');
+};
+
+window.printPaymentSlip = function() {
+  const p = getActiveProperty();
+  const roomNo = el('ps-room-no')?.textContent || 'Room';
+  const monthTxt = el('ps-month-display')?.textContent || 'Month';
+
+  const prevTitle = document.title;
+  const safePropName = (p?.name || 'PMS').replace(/[\s\/\\:*?"<>|]+/g, '_');
+  const safeRoom = String(roomNo).replace(/[\s\/\\:*?"<>|]+/g, '_');
+  const safeMonth = String(monthTxt).replace(/[\s\/\\:*?"<>|]+/g, '_');
+  document.title = `বিকাশ_পেমেন্ট_স্লিপ_${safePropName}_রুম_${safeRoom}_${safeMonth}`;
+
+  window.print();
+
+  setTimeout(() => {
+    document.title = prevTitle;
+  }, 1000);
+};
+
+window.copyBkashNumber = function() {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText('01533958357').then(() => {
+      toast('বিকাশ নম্বর 01533958357 কপি হয়েছে!', 'success');
+    }).catch(() => {
+      toast('বিকাশ নম্বর: 01533958357', 'info');
+    });
+  } else {
+    toast('বিকাশ নম্বর: 01533958357', 'info');
+  }
 };
 
 window.printReceipt = function() {
@@ -181,6 +268,13 @@ el('btn-print-receipt')?.addEventListener('click', () => {
   if (!rid) return;
   closeModal('modal-bill');
   openReceiptModal(rid);
+});
+
+el('btn-open-payment-slip')?.addEventListener('click', () => {
+  const rid = el('form-bill').dataset.roomId;
+  if (!rid) return;
+  closeModal('modal-bill');
+  openPaymentSlipModal(rid);
 });
 
 el('btn-whatsapp-bill')?.addEventListener('click', () => {

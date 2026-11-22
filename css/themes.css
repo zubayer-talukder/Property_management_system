@@ -436,3 +436,54 @@
 [data-theme="bluish"] .receipt-sig-label {
   color: #0f172a !important;
 }
+
+/* HIGH-CONTRAST BKASH PAYMENT SLIP & QR BOX IN BLUISH THEME */
+[data-theme="bluish"] .payment-slip-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 2px solid #fbcfe8 !important;
+}
+
+[data-theme="bluish"] .receipt-payment-qr-box {
+  background: #fff5f8 !important;
+  border: 1.5px solid #fbcfe8 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="bluish"] .receipt-qr-amt-highlight {
+  background: #ffffff !important;
+  border: 1.5px solid #fda4af !important;
+}
+
+[data-theme="bluish"] .receipt-qr-amt-highlight .amt-lbl {
+  color: #475569 !important;
+}
+
+[data-theme="bluish"] .receipt-qr-amt-highlight .amt-val {
+  color: #be123c !important;
+}
+
+[data-theme="bluish"] .receipt-qr-grid .qg-val {
+  color: #0f172a !important;
+}
+
+[data-theme="bluish"] .ps-brand h3,
+[data-theme="bluish"] .ps-tenant-item strong,
+[data-theme="bluish"] .ps-i-val {
+  color: #0f172a !important;
+}
+
+[data-theme="bluish"] .ps-tenant-grid {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="bluish"] .ps-guide-steps {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #334155 !important;
+}
+
+[data-theme="bluish"] .ps-guide-steps strong {
+  color: #0f172a !important;
+}

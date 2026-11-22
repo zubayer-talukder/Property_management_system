@@ -135,6 +135,7 @@ function renderRoomsTable(p) {
           ${!isVacant ? `<button class="btn btn-secondary btn-sm" onclick="openBillModal('${r.id}')"><i class="fa-solid fa-coins"></i> বিল</button>` : ''}
           ${!isVacant ? `<button class="btn btn-secondary btn-sm" onclick="openTenantModal('${r.id}','view')"><i class="fa-solid fa-user"></i> KYC</button>` : ''}
           ${!isVacant ? `<button class="btn btn-primary btn-sm" onclick="openReceiptModal('${r.id}')" title="মানি রিসিট"><i class="fa-solid fa-receipt"></i> রিসিট</button>` : ''}
+          ${!isVacant ? `<button class="btn btn-pink btn-sm" onclick="openPaymentSlipModal('${r.id}')" title="বিকাশ কিউআর পেমেন্ট স্লিপ"><i class="fa-solid fa-qrcode"></i> QR বিল</button>` : ''}
           <button class="btn btn-success btn-sm btn-icon" onclick="openTenantModal('${r.id}','add')" title="এই রুমে নতুন ভাড়াটিয়া যুক্ত করুন"><i class="fa-solid fa-user-plus"></i></button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoom('${r.id}')" title="Delete Room"><i class="fa-solid fa-trash-can"></i></button>
         </div>

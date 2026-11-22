@@ -461,9 +461,11 @@
           </div>
         </div>
         <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-          <div style="display:flex;gap:0.4rem">
+          <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
             <button type="button" class="btn btn-secondary btn-sm" id="btn-print-receipt"><i
                 class="fa-solid fa-receipt"></i> মানি রিসিট</button>
+            <button type="button" class="btn btn-warning btn-sm" id="btn-open-payment-slip"><i
+                class="fa-solid fa-qrcode"></i> বিকাশ QR স্লিপ</button>
             <button type="button" class="btn btn-success btn-sm" id="btn-whatsapp-bill"><i
                 class="fa-brands fa-whatsapp"></i> WhatsApp বিল</button>
           </div>
@@ -560,6 +562,37 @@
             <strong>মন্তব্য / নোট:</strong> <span id="receipt-comment">কোনো বিশেষ মন্তব্য নেই।</span>
           </div>
 
+          <!-- bKash & Bangla QR Digital Payment Box -->
+          <div class="receipt-payment-qr-box" id="receipt-payment-qr-box">
+            <div class="receipt-qr-media">
+              <img src="assets/bkash-qr.jpg" alt="bKash Bangla QR" class="receipt-qr-img" />
+              <div class="receipt-qr-sublabel"><i class="fa-solid fa-qrcode"></i> বাংলা QR স্ক্যান করুন</div>
+            </div>
+            <div class="receipt-qr-info">
+              <div class="receipt-qr-badge">
+                <span><i class="fa-solid fa-mobile-screen-button"></i> বিকাশ / বাংলা QR পেমেন্ট</span>
+                <span class="qr-send-type">সেন্ড মানি (Send Money)</span>
+              </div>
+              <div class="receipt-qr-amt-highlight">
+                <span class="amt-lbl">প্রদেয় মোট টাকা (Payable Amount):</span>
+                <strong class="amt-val" id="receipt-qr-payable-amt">৳০</strong>
+              </div>
+              <div class="receipt-qr-grid">
+                <div>
+                  <span class="qg-lbl">বিকাশ পার্সোনাল নম্বর:</span>
+                  <strong class="qg-val text-pink">01533958357</strong>
+                </div>
+                <div>
+                  <span class="qg-lbl">রেফারেন্স (Ref Code):</span>
+                  <strong class="qg-val" id="receipt-qr-ref">রুম —</strong>
+                </div>
+              </div>
+              <div class="receipt-qr-notice">
+                <i class="fa-solid fa-circle-check"></i> বিকাশ, নগদ, রকেট বা যেকোনো ব্যাংক অ্যাপের "Bangla QR" অপশন দিয়ে সরাসরি স্ক্যান করে পেমেন্ট করুন।
+              </div>
+            </div>
+          </div>
+
           <!-- Dual Signatures Row -->
           <div class="receipt-signatures-row">
             <div class="receipt-sig-block">
@@ -580,11 +613,113 @@
       </div>
       <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
         <button type="button" class="btn btn-secondary" data-close-modal="modal-receipt">বন্ধ করুন</button>
-        <div style="display:flex;gap:0.5rem">
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          <button type="button" class="btn btn-warning" id="receipt-btn-open-slip"><i class="fa-solid fa-qrcode"></i>
+            বিকাশ QR স্লিপ</button>
           <button type="button" class="btn btn-success" id="receipt-btn-whatsapp"><i class="fa-brands fa-whatsapp"></i>
             WhatsApp-এ পাঠান</button>
           <button type="button" class="btn btn-primary" onclick="printReceipt()"><i class="fa-solid fa-print"></i>
             প্রিন্ট / PDF সেভ করুন</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Dedicated bKash Bangla QR Payment Slip Modal ──────────────────────────── -->
+  <div id="modal-payment-slip" class="modal-backdrop">
+    <div class="modal modal-md">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-qrcode"></i> বিকাশ পেমেন্ট স্লিপ ও বাংলা QR</div>
+        <button class="modal-close" data-close-modal="modal-payment-slip"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="payment-slip-printable-area">
+        <div class="payment-slip-card">
+          <!-- Top Header -->
+          <div class="ps-header">
+            <div class="ps-brand">
+              <h3 id="ps-prop-name">—</h3>
+              <p id="ps-prop-addr">—</p>
+            </div>
+            <div class="ps-badge">বিল পেমেন্ট রিকোয়েস্ট</div>
+          </div>
+
+          <!-- Month & Tenant Details -->
+          <div class="ps-tenant-grid">
+            <div class="ps-tenant-item">
+              <span class="ps-lbl">ভাড়ার মাস:</span>
+              <strong id="ps-month-display">—</strong>
+            </div>
+            <div class="ps-tenant-item">
+              <span class="ps-lbl">রুম / ফ্ল্যাট নং:</span>
+              <strong id="ps-room-no">—</strong>
+            </div>
+            <div class="ps-tenant-item">
+              <span class="ps-lbl">ভাড়াটিয়ার নাম:</span>
+              <strong id="ps-tenant-name">—</strong>
+            </div>
+            <div class="ps-tenant-item">
+              <span class="ps-lbl">মোবাইল নম্বর:</span>
+              <strong id="ps-tenant-phone">—</strong>
+            </div>
+          </div>
+
+          <!-- Big Payable Amount Banner -->
+          <div class="ps-amount-banner">
+            <div class="ps-amt-title">পরিশোধযোগ্য সর্বমোট বিল (Payable Bill)</div>
+            <div class="ps-amt-number" id="ps-payable-amt">৳০</div>
+            <div class="ps-amt-sub" id="ps-amt-breakdown-note">ভাড়া + বিদ্যুৎ/ইউটিলিটি চার্জ</div>
+          </div>
+
+          <!-- QR Code & Instructions Box -->
+          <div class="ps-qr-section">
+            <div class="ps-qr-box">
+              <img src="assets/bkash-qr.jpg" alt="bKash Bangla QR" class="ps-qr-image" />
+              <div class="ps-qr-footer-text"><i class="fa-solid fa-camera"></i> বিকাশ বা ব্যাংক অ্যাপ দিয়ে স্ক্যান করুন</div>
+            </div>
+            <div class="ps-info-box">
+              <div class="ps-info-row">
+                <span class="ps-i-lbl">পেমেন্ট গেটওয়ে:</span>
+                <span class="ps-i-val ps-bkash-pill"><i class="fa-solid fa-mobile-screen"></i> বিকাশ বাংলা QR</span>
+              </div>
+              <div class="ps-info-row">
+                <span class="ps-i-lbl">বিকাশ পার্সোনাল নম্বর:</span>
+                <div style="display:flex;align-items:center;gap:0.4rem">
+                  <span class="ps-i-val ps-bkash-num">01533958357</span>
+                  <button type="button" class="btn-copy-num" onclick="copyBkashNumber()" title="নম্বর কপি করুন"><i class="fa-solid fa-copy"></i></button>
+                </div>
+              </div>
+              <div class="ps-info-row">
+                <span class="ps-i-lbl">পেমেন্ট রেফারেন্স:</span>
+                <span class="ps-i-val" id="ps-ref-val">রুম নং: —</span>
+              </div>
+              <div class="ps-info-row">
+                <span class="ps-i-lbl">লেনদেনের ধরন:</span>
+                <span class="ps-i-val" style="color:#d12053;font-weight:700">সেন্ড মানি (Send Money)</span>
+              </div>
+              <div class="ps-guide-steps">
+                <strong>কিভাবে পেমেন্ট করবেন?</strong>
+                <ol>
+                  <li>বিকাশ অ্যাপ ওপেন করে <strong>"কিউআর স্ক্যান"</strong> অপশনে যান।</li>
+                  <li>পাশের বাংলা QR স্ক্যান করুন অথবা <strong>01533958357</strong> নম্বরে সেন্ড মানি করুন।</li>
+                  <li>অ্যামাউন্টে ঠিক <strong><span id="ps-step-amt">৳০</span></strong> লিখুন।</li>
+                  <li>রেফারেন্সে <strong><span id="ps-step-ref">রুম নং</span></strong> লিখে পিন দিয়ে কনফার্ম করুন।</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer Stamp -->
+          <div class="ps-card-footer">
+            <span>* টাকা পাঠানোর পর বাড়িওয়ালাকে ট্রানজেকশন আইডি বা কনফার্মেশন মেসেজ পাঠান। *</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-payment-slip">বন্ধ করুন</button>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
+          <a href="assets/bkash-qr.jpg" download="bkash-bangla-qr-01533958357.jpg" class="btn btn-outline-pink btn-sm"><i class="fa-solid fa-download"></i> QR ছবি সেভ</a>
+          <button type="button" class="btn btn-success btn-sm" id="ps-btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp-এ পাঠান</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="printPaymentSlip()"><i class="fa-solid fa-print"></i> স্লিপ প্রিন্ট / PDF</button>
         </div>
       </div>
     </div>

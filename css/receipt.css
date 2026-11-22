@@ -177,3 +177,316 @@
   border-top: 1px solid var(--glass-border);
   padding-top: 0.5rem;
 }
+
+/* ── bKash & Bangla QR Digital Payment Styles ──────────────── */
+.receipt-payment-qr-box {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: #fff5f8 !important;
+  border: 1.5px solid #fbcfe8 !important;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.05);
+}
+.receipt-qr-media {
+  text-align: center;
+  flex-shrink: 0;
+}
+.receipt-qr-img {
+  width: 105px;
+  height: auto;
+  border-radius: 8px;
+  border: 1.5px solid #f43f5e;
+  background: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  display: block;
+  margin: 0 auto 0.35rem;
+}
+.receipt-qr-sublabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #be123c;
+}
+.receipt-qr-info {
+  flex: 1;
+  min-width: 0;
+}
+.receipt-qr-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #9f1239;
+}
+.qr-send-type {
+  background: #e11d48;
+  color: #ffffff !important;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  text-transform: uppercase;
+}
+.receipt-qr-amt-highlight {
+  background: #ffffff;
+  border: 1.5px solid #fda4af;
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.85rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.55rem;
+}
+.receipt-qr-amt-highlight .amt-lbl {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #475569;
+}
+.receipt-qr-amt-highlight .amt-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #be123c;
+}
+.receipt-qr-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+  margin-bottom: 0.45rem;
+}
+.receipt-qr-grid .qg-lbl {
+  display: block;
+  font-size: 0.72rem;
+  color: #64748b;
+}
+.receipt-qr-grid .qg-val {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.text-pink {
+  color: #be123c !important;
+}
+.receipt-qr-notice {
+  font-size: 0.72rem;
+  color: #64748b;
+  line-height: 1.35;
+}
+
+/* ── Dedicated bKash Payment Slip Card Modal ───────────────── */
+.payment-slip-card {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 2px solid #fbcfe8;
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: 0 4px 20px rgba(225, 29, 72, 0.08);
+  max-width: 520px;
+  margin: 0 auto;
+}
+.ps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 2px solid #e11d48;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  gap: 0.75rem;
+}
+.ps-brand h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.15rem;
+}
+.ps-brand p {
+  font-size: 0.78rem;
+  color: #64748b;
+}
+.ps-badge {
+  background: #e11d48;
+  color: #fff !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.ps-tenant-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem 1rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.82rem;
+}
+.ps-tenant-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.ps-tenant-item .ps-lbl {
+  font-size: 0.72rem;
+  color: #64748b;
+}
+.ps-tenant-item strong {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+.ps-amount-banner {
+  background: linear-gradient(135deg, #be123c, #e11d48);
+  color: #ffffff !important;
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.25);
+}
+.ps-amt-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.95;
+  margin-bottom: 0.25rem;
+}
+.ps-amt-number {
+  font-size: 2rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+.ps-amt-sub {
+  font-size: 0.74rem;
+  opacity: 0.9;
+  margin-top: 0.25rem;
+}
+.ps-qr-section {
+  display: flex;
+  gap: 1.25rem;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+@media (max-width: 500px) {
+  .ps-qr-section { flex-direction: column; text-align: center; }
+  .receipt-payment-qr-box { flex-direction: column; text-align: center; }
+  .receipt-qr-amt-highlight { flex-direction: column; gap: 0.35rem; }
+  .receipt-qr-grid { grid-template-columns: 1fr; }
+}
+.ps-qr-box {
+  flex-shrink: 0;
+  text-align: center;
+}
+.ps-qr-image {
+  width: 135px;
+  height: auto;
+  border: 2px solid #f43f5e;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  display: block;
+  margin: 0 auto 0.4rem;
+  background: #ffffff;
+}
+.ps-qr-footer-text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #be123c;
+}
+.ps-info-box {
+  flex: 1;
+  min-width: 0;
+}
+.ps-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0;
+  border-bottom: 1px dashed #e2e8f0;
+  font-size: 0.82rem;
+}
+.ps-i-lbl {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+.ps-i-val {
+  font-weight: 800;
+  color: #0f172a;
+}
+.ps-bkash-pill {
+  background: #fff1f2;
+  color: #be123c !important;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+}
+.ps-bkash-num {
+  font-size: 1rem;
+  color: #be123c;
+  letter-spacing: 0.03em;
+}
+.btn-copy-num {
+  background: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 0.15rem 0.35rem;
+  color: #475569;
+  cursor: pointer;
+  font-size: 0.72rem;
+  transition: var(--transition-fast);
+}
+.btn-copy-num:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+.ps-guide-steps {
+  margin-top: 0.65rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.74rem;
+  color: #334155;
+  text-align: left;
+}
+.ps-guide-steps strong {
+  display: block;
+  margin-bottom: 0.3rem;
+  color: #0f172a;
+}
+.ps-guide-steps ol {
+  margin: 0;
+  padding-left: 1.15rem;
+  line-height: 1.45;
+}
+.ps-card-footer {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 0.6rem;
+  font-size: 0.7rem;
+  color: #64748b;
+  text-align: center;
+}
+.btn-pink {
+  background: #e11d48;
+  color: #ffffff !important;
+  border: 1px solid #be123c;
+}
+.btn-pink:hover {
+  background: #be123c;
+}
+.btn-outline-pink {
+  background: transparent;
+  color: #e11d48 !important;
+  border: 1.5px solid #e11d48;
+}
+.btn-outline-pink:hover {
+  background: #fff1f2;
+}
