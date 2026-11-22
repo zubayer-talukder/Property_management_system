@@ -282,35 +282,16 @@ ${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-
   const fileName = `${gw.shortName.toLowerCase()}-qr-room-${room.number}.png`;
   const qrFile = await getQrFileFromSrc(qrSrc, fileName);
 
-  // 1. Mobile Web Share API: share bill text and QR image file natively
-  if (qrFile && navigator.canShare && navigator.canShare({ files: [qrFile] })) {
-    try {
-      await navigator.share({
-        title: `বাড়ি ভাড়া বিল — রুম ${room.number}`,
-        text: msg,
-        files: [qrFile]
-      });
-      toast('✓ বিল ও কিউআর ছবি সফলভাবে শেয়ার করা হয়েছে!', 'success');
-      return;
-    } catch (err) {
-      if (err.name === 'AbortError') {
-        // User dismissed share sheet, no further action needed
-        return;
-      }
-      console.warn('Web Share API error, using fallback:', err);
-    }
-  }
-
-  // 2. Desktop Fallback: Copy QR picture to clipboard so landlord can simply Ctrl+V into WhatsApp Web
+  // Copy QR picture to clipboard so landlord can simply press Ctrl+V to attach it in WhatsApp
   if (qrFile) {
     copyImageToClipboard(qrFile).then(copied => {
       if (copied) {
-        toast('QR ছবি ক্লিপবোর্ডে কপি হয়েছে! WhatsApp এ Ctrl+V চাপুন।', 'info');
+        toast('✓ QR ছবি কপি হয়েছে! চ্যাটে Ctrl+V চেপে পেস্ট করুন।', 'success', 4500);
       }
     });
   }
 
-  // 3. Open WhatsApp Click-to-Chat
+  // Open direct WhatsApp chat with the tenant's exact phone number
   const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
