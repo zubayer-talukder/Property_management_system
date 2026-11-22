@@ -123,6 +123,22 @@
   .receipt-qr-img, .ps-qr-image {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    display: block !important;
+    margin: 0 auto !important;
+  }
+
+  .receipt-qr-img {
+    width: 155px !important;
+    height: 155px !important;
+    padding: 3px !important;
+    border: 1.5px solid #000000 !important;
+  }
+
+  .ps-qr-image {
+    width: 200px !important;
+    height: 200px !important;
+    padding: 4px !important;
+    border: 2px solid #000000 !important;
   }
 
   .receipt-banner {
