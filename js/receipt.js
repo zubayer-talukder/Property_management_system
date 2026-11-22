@@ -16,23 +16,40 @@ const PAYMENT_GATEWAYS = {
   cellfin: {
     id: 'cellfin',
     name: 'CellFin (ইসলামী ব্যাংক)',
-    badgeTitle: 'CellFin বাংলা QR (ইসলামী ব্যাংক)',
+    badgeTitle: 'CellFin বাংলা QR (মোবাইল একাউন্ট)',
     label: 'সেলফিন / মোবাইল নম্বর:',
     shortName: 'CellFin',
     number: '01533958357',
     accName: 'ABDULLAH ZUBAYER TALUKDER',
     defaultQr: 'assets/cellfin-qr-matrix.png',
     themeColor: '#047857',
-    type: 'সেন্ড মানি / ফান্ড ট্রান্সফার',
+    type: 'সেন্ড মানি (Send Money)',
     sublabel: '01533958357 (CellFin)'
+  },
+  bank: {
+    id: 'bank',
+    name: 'ইসলামী ব্যাংক (Bank Transfer)',
+    badgeTitle: 'ইসলামী ব্যাংক বাংলা QR (Bank A/C)',
+    label: 'ব্যাংক হিসাব নম্বর (A/C No):',
+    shortName: 'ব্যাংক একাউন্ট',
+    number: '20507776702350919',
+    accName: 'ABDULLAH ZUBAYER TALUKDER',
+    bankName: 'ইসলামী ব্যাংক বাংলাদেশ পিএলসি',
+    defaultQr: 'assets/bank-qr-matrix.png',
+    themeColor: '#0284c7',
+    type: 'ব্যাংক একাউন্ট ট্রান্সফার',
+    sublabel: '20507776702350919 (A/C No)'
   }
 };
 
 window.activeSlipGateway = 'bkash';
 
 function getBillPaymentConfig(b) {
-  const gwKey = (b && b.paymentGateway === 'cellfin') ? 'cellfin' : 'bkash';
-  const gw = PAYMENT_GATEWAYS[gwKey];
+  let gwKey = 'bkash';
+  if (b && (b.paymentGateway === 'cellfin' || b.paymentGateway === 'bank')) {
+    gwKey = b.paymentGateway;
+  }
+  const gw = PAYMENT_GATEWAYS[gwKey] || PAYMENT_GATEWAYS.bkash;
   const qrSrc = (b && b.customQr) ? b.customQr : gw.defaultQr;
   const isCustom = Boolean(b && b.customQr);
   return { gw, qrSrc, isCustom, gwKey };
@@ -80,11 +97,12 @@ function shareBillWhatsApp(room, bill, prop) {
 
   let payMsg = '';
   if (payableAmt > 0) {
+    const bankLine = gw.bankName ? `• ব্যাংক এর নাম: *${gw.bankName}*\n` : '';
     payMsg = `--------------------------------
 📲 *${gw.shortName} পেমেন্ট (${gw.type}):*
 • ${gw.label} *${gw.number}*
 • হিসাবধারীর নাম: *${gw.accName}*
-• প্রদেয় টাকার পরিমাণ: *৳${payableAmt.toLocaleString('en-IN')}*
+${bankLine}• প্রদেয় টাকার পরিমাণ: *৳${payableAmt.toLocaleString('en-IN')}*
 • রেফারেন্স: *রুম ${room.number}*
 ${isCustom ? `(এই বিলের জন্য নির্দিষ্ট ৳${payableAmt.toLocaleString('en-IN')} টাকার ডায়নামিক QR কোড স্লিপে যুক্ত আছে, স্ক্যান করলেই টাকা সরাসরি বসে যাবে)\n` : `(বিকাশ, সেলফিন বা যেকোনো ব্যাংকের বাংলা QR স্ক্যান করেও পেমেন্ট করতে পারবেন)\n`}--------------------------------\n`;
   }
@@ -254,7 +272,10 @@ window.openReceiptModal = function(rid) {
   if (el('receipt-qr-acc-lbl')) el('receipt-qr-acc-lbl').textContent = gw.label;
   if (el('receipt-qr-acc-num')) {
     el('receipt-qr-acc-num').textContent = gw.number;
-    el('receipt-qr-acc-num').className = 'qg-val ' + (gw.id === 'cellfin' ? 'text-green' : 'text-pink');
+    let colorCls = 'text-pink';
+    if (gw.id === 'cellfin') colorCls = 'text-green';
+    else if (gw.id === 'bank') colorCls = 'text-sky';
+    el('receipt-qr-acc-num').className = 'qg-val ' + colorCls;
   }
   if (el('receipt-qr-payable-amt')) el('receipt-qr-payable-amt').textContent = fmt(payableAmt > 0 ? payableAmt : b.total);
   if (el('receipt-qr-ref')) el('receipt-qr-ref').textContent = `রুম নং: ${room.number}`;
@@ -300,6 +321,7 @@ function renderPaymentSlipUI(room, b, p) {
   // Switch buttons active state
   if (el('ps-gw-btn-bkash')) el('ps-gw-btn-bkash').className = 'ps-gw-btn' + (gwKey === 'bkash' ? ' active' : '');
   if (el('ps-gw-btn-cellfin')) el('ps-gw-btn-cellfin').className = 'ps-gw-btn' + (gwKey === 'cellfin' ? ' active' : '');
+  if (el('ps-gw-btn-bank')) el('ps-gw-btn-bank').className = 'ps-gw-btn' + (gwKey === 'bank' ? ' active' : '');
 
   // QR Image and Header
   if (el('ps-qr-image')) el('ps-qr-image').src = qrSrc;
@@ -320,15 +342,35 @@ function renderPaymentSlipUI(room, b, p) {
 
   // Gateway Info Box
   if (el('ps-gw-pill')) {
-    el('ps-gw-pill').className = 'ps-i-val ' + (gwKey === 'cellfin' ? 'ps-cellfin-pill' : 'ps-bkash-pill');
-    el('ps-gw-pill').innerHTML = `<i class="fa-solid ${gwKey === 'cellfin' ? 'fa-building-columns' : 'fa-mobile-screen'}"></i> ${gw.badgeTitle}`;
+    let pillCls = 'ps-bkash-pill';
+    let iconCls = 'fa-mobile-screen';
+    if (gwKey === 'cellfin') {
+      pillCls = 'ps-cellfin-pill';
+      iconCls = 'fa-building-columns';
+    } else if (gwKey === 'bank') {
+      pillCls = 'ps-bank-pill';
+      iconCls = 'fa-landmark';
+    }
+    el('ps-gw-pill').className = 'ps-i-val ' + pillCls;
+    el('ps-gw-pill').innerHTML = `<i class="fa-solid ${iconCls}"></i> ${gw.badgeTitle}`;
   }
   if (el('ps-num-label')) el('ps-num-label').textContent = gw.label;
   if (el('ps-acc-number')) {
     el('ps-acc-number').textContent = gw.number;
-    el('ps-acc-number').className = 'ps-i-val ' + (gwKey === 'cellfin' ? 'ps-cellfin-num' : 'ps-bkash-num');
+    let numCls = 'ps-bkash-num';
+    if (gwKey === 'cellfin') numCls = 'ps-cellfin-num';
+    else if (gwKey === 'bank') numCls = 'ps-bank-num';
+    el('ps-acc-number').className = 'ps-i-val ' + numCls;
   }
   if (el('ps-acc-name')) el('ps-acc-name').textContent = gw.accName;
+  if (el('ps-bank-name-row')) {
+    if (gw.bankName) {
+      el('ps-bank-name-row').style.display = 'flex';
+      if (el('ps-bank-name')) el('ps-bank-name').textContent = gw.bankName;
+    } else {
+      el('ps-bank-name-row').style.display = 'none';
+    }
+  }
   if (el('ps-send-type')) {
     el('ps-send-type').textContent = gw.type;
     el('ps-send-type').style.color = gw.themeColor;

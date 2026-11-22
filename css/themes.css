@@ -506,6 +506,12 @@
   color: #6ee7b7;
 }
 
+[data-theme="bluish"] .gateway-radio-pill.bank-pill:has(input:checked) {
+  border-color: #38bdf8;
+  background: rgba(14, 165, 233, 0.15);
+  color: #7dd3fc;
+}
+
 [data-theme="bluish"] .ps-gateway-toggle {
   background: #f1f5f9 !important;
   border: 1px solid #cbd5e1 !important;
@@ -526,6 +532,19 @@
 
 [data-theme="bluish"] #ps-gw-btn-cellfin.active {
   color: #047857 !important;
+}
+
+[data-theme="bluish"] #ps-gw-btn-bank.active {
+  color: #0284c7 !important;
+}
+
+[data-theme="bluish"] .ps-bank-pill {
+  background: #f0f9ff !important;
+  color: #0369a1 !important;
+}
+
+[data-theme="bluish"] .ps-bank-num {
+  color: #0284c7 !important;
 }
 
 [data-theme="bluish"] .ps-qr-status-pill {

@@ -561,6 +561,11 @@
   background: #ecfdf5;
   color: #047857;
 }
+.gateway-radio-pill.bank-pill:has(input:checked) {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  color: #0369a1;
+}
 
 /* ── Payment Slip Toolbar & Switcher ────────────────────────── */
 .ps-toolbar-row {
@@ -606,6 +611,9 @@
 #ps-gw-btn-cellfin.active {
   color: #047857;
 }
+#ps-gw-btn-bank.active {
+  color: #0284c7;
+}
 .ps-custom-qr-tools {
   display: flex;
   align-items: center;
@@ -638,6 +646,22 @@
   color: #047857;
   letter-spacing: 0.03em;
 }
+.ps-bank-pill {
+  background: #f0f9ff;
+  color: #0369a1 !important;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+}
+.ps-bank-num {
+  font-size: 0.95rem;
+  color: #0284c7;
+  letter-spacing: 0.03em;
+  font-weight: 700;
+}
 .text-green {
   color: #047857 !important;
+}
+.text-sky {
+  color: #0284c7 !important;
 }

@@ -471,6 +471,10 @@
                   <input type="radio" name="bill-payment-gateway" value="cellfin">
                   <span><i class="fa-solid fa-building-columns"></i> CellFin</span>
                 </label>
+                <label class="gateway-radio-pill bank-pill">
+                  <input type="radio" name="bill-payment-gateway" value="bank">
+                  <span><i class="fa-solid fa-landmark"></i> ব্যাংক একাউন্ট</span>
+                </label>
               </div>
             </div>
 
@@ -729,6 +733,9 @@
               <button type="button" class="ps-gw-btn" id="ps-gw-btn-cellfin" onclick="switchActiveSlipGateway('cellfin')">
                 <i class="fa-solid fa-building-columns"></i> CellFin
               </button>
+              <button type="button" class="ps-gw-btn" id="ps-gw-btn-bank" onclick="switchActiveSlipGateway('bank')">
+                <i class="fa-solid fa-landmark"></i> ব্যাংক একাউন্ট
+              </button>
             </div>
             <div class="ps-custom-qr-tools">
               <input type="file" id="ps-custom-qr-input" accept="image/*" style="display:none">
@@ -764,6 +771,10 @@
               <div class="ps-info-row">
                 <span class="ps-i-lbl">হিসাবধারীর নাম:</span>
                 <span class="ps-i-val" id="ps-acc-name">ABDULLAH ZUBAYER TALUKDER</span>
+              </div>
+              <div class="ps-info-row" id="ps-bank-name-row" style="display:none">
+                <span class="ps-i-lbl">ব্যাংক এর নাম:</span>
+                <span class="ps-i-val" id="ps-bank-name">ইসলামী ব্যাংক বাংলাদেশ পিএলসি</span>
               </div>
               <div class="ps-info-row">
                 <span class="ps-i-lbl">পেমেন্ট রেফারেন্স:</span>
