@@ -423,6 +423,22 @@ window.openBillModal = function(rid) {
   el('bill-paid').value       = b.paid;
   el('bill-paid-date').value  = b.paidDate;
   el('bill-comment').value    = b.comment;
+
+  // Populate Payment Gateway & Custom QR for this bill
+  const gwVal = b.paymentGateway || 'bkash';
+  const gwRadio = document.querySelector(`input[name="bill-payment-gateway"][value="${gwVal}"]`);
+  if (gwRadio) gwRadio.checked = true;
+
+  if (el('bill-custom-qr-data')) el('bill-custom-qr-data').value = b.customQr || '';
+  if (b.customQr) {
+    if (el('bill-custom-qr-thumb')) el('bill-custom-qr-thumb').src = b.customQr;
+    if (el('bill-custom-qr-preview-area')) el('bill-custom-qr-preview-area').style.display = 'flex';
+    if (el('bill-custom-qr-upload-btn-area')) el('bill-custom-qr-upload-btn-area').style.display = 'none';
+  } else {
+    if (el('bill-custom-qr-preview-area')) el('bill-custom-qr-preview-area').style.display = 'none';
+    if (el('bill-custom-qr-upload-btn-area')) el('bill-custom-qr-upload-btn-area').style.display = 'block';
+  }
+
   el('form-bill').dataset.roomId = rid;
   updateBillTotalsUI({ ...b, prevBalance: carriedPrev });
   openModal('modal-bill');
@@ -512,6 +528,17 @@ el('form-bill').addEventListener('submit', e => {
   b.paid        = tk(el('bill-paid').value);
   b.paidDate    = el('bill-paid-date').value;
   b.comment     = el('bill-comment').value;
+
+  // Save selected Payment Gateway & Custom Dynamic QR
+  const selectedGw = document.querySelector('input[name="bill-payment-gateway"]:checked')?.value || 'bkash';
+  b.paymentGateway = selectedGw;
+  const customQrVal = el('bill-custom-qr-data')?.value;
+  if (customQrVal) {
+    b.customQr = customQrVal;
+  } else {
+    delete b.customQr;
+  }
+
   delete b.isTransient;
   recalcBill(b);
 
@@ -520,4 +547,32 @@ el('form-bill').addEventListener('submit', e => {
 
   save(); closeModal('modal-bill'); renderDetailPage();
   toast('বিল আপডেট হয়েছে!', 'success');
+});
+
+// Custom QR uploader button listeners for modal-bill
+el('btn-trigger-qr-upload')?.addEventListener('click', () => {
+  el('bill-custom-qr-file')?.click();
+});
+
+el('bill-custom-qr-file')?.addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  if (window.compressQrImageFile) {
+    window.compressQrImageFile(file, function(dataUrl) {
+      if (el('bill-custom-qr-data')) el('bill-custom-qr-data').value = dataUrl;
+      if (el('bill-custom-qr-thumb')) el('bill-custom-qr-thumb').src = dataUrl;
+      if (el('bill-custom-qr-preview-area')) el('bill-custom-qr-preview-area').style.display = 'flex';
+      if (el('bill-custom-qr-upload-btn-area')) el('bill-custom-qr-upload-btn-area').style.display = 'none';
+      toast('কাস্টম কিউআর ছবি লোড হয়েছে! বিল সেভ করুন।', 'info');
+    });
+  }
+  e.target.value = '';
+});
+
+el('btn-delete-custom-qr')?.addEventListener('click', () => {
+  if (el('bill-custom-qr-data')) el('bill-custom-qr-data').value = '';
+  if (el('bill-custom-qr-thumb')) el('bill-custom-qr-thumb').src = '';
+  if (el('bill-custom-qr-preview-area')) el('bill-custom-qr-preview-area').style.display = 'none';
+  if (el('bill-custom-qr-upload-btn-area')) el('bill-custom-qr-upload-btn-area').style.display = 'block';
+  toast('কাস্টম কিউআর সরানো হয়েছে (ডিফল্ট কার্যকর হবে)', 'info');
 });

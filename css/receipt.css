@@ -514,3 +514,130 @@
 .btn-outline-pink:hover {
   background: #fff1f2;
 }
+
+/* ── Bill Modal QR Config & Uploader ────────────────────────── */
+.bill-qr-config-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  margin-bottom: 1rem;
+}
+.bill-qr-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+.bill-gateway-radios {
+  display: flex;
+  gap: 0.4rem;
+}
+.gateway-radio-pill {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-color);
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+}
+.gateway-radio-pill input {
+  display: none;
+}
+.gateway-radio-pill:has(input:checked) {
+  border-color: #e11d48;
+  background: #fff1f2;
+  color: #be123c;
+}
+.gateway-radio-pill.cellfin-pill:has(input:checked) {
+  border-color: #047857;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+/* ── Payment Slip Toolbar & Switcher ────────────────────────── */
+.ps-toolbar-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px dashed #e2e8f0;
+}
+.ps-gateway-toggle {
+  display: flex;
+  gap: 0.35rem;
+  background: #f1f5f9;
+  padding: 0.2rem;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+}
+.ps-gw-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.25rem 0.7rem;
+  border-radius: 999px;
+  color: #475569;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  transition: var(--transition-fast);
+}
+.ps-gw-btn.active {
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+#ps-gw-btn-bkash.active {
+  color: #e11d48;
+}
+#ps-gw-btn-cellfin.active {
+  color: #047857;
+}
+.ps-custom-qr-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+.ps-qr-status-pill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+}
+.ps-qr-status-pill.custom {
+  background: #ecfdf5;
+  color: #047857;
+  border-color: #6ee7b7;
+}
+.ps-cellfin-pill {
+  background: #ecfdf5;
+  color: #047857 !important;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+}
+.ps-cellfin-num {
+  font-size: 1rem;
+  color: #047857;
+  letter-spacing: 0.03em;
+}
+.text-green {
+  color: #047857 !important;
+}

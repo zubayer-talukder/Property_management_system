@@ -33,7 +33,8 @@
   #modal-payment-slip:not(.open),
   .modal-header,
   .modal-footer,
-  .modal-close {
+  .modal-close,
+  .ps-toolbar-row {
     display: none !important;
   }
 

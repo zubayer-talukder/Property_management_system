@@ -487,3 +487,55 @@
 [data-theme="bluish"] .ps-guide-steps strong {
   color: #0f172a !important;
 }
+
+[data-theme="bluish"] .gateway-radio-pill {
+  background: var(--bg-primary);
+  border-color: var(--glass-border);
+  color: var(--text-primary);
+}
+
+[data-theme="bluish"] .gateway-radio-pill:has(input:checked) {
+  border-color: #f43f5e;
+  background: rgba(225, 29, 72, 0.15);
+  color: #fda4af;
+}
+
+[data-theme="bluish"] .gateway-radio-pill.cellfin-pill:has(input:checked) {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  color: #6ee7b7;
+}
+
+[data-theme="bluish"] .ps-gateway-toggle {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="bluish"] .ps-gw-btn {
+  color: #475569 !important;
+}
+
+[data-theme="bluish"] .ps-gw-btn.active {
+  background: #ffffff !important;
+  color: #0f172a !important;
+}
+
+[data-theme="bluish"] #ps-gw-btn-bkash.active {
+  color: #e11d48 !important;
+}
+
+[data-theme="bluish"] #ps-gw-btn-cellfin.active {
+  color: #047857 !important;
+}
+
+[data-theme="bluish"] .ps-qr-status-pill {
+  background: #f1f5f9 !important;
+  color: #475569 !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
+[data-theme="bluish"] .ps-qr-status-pill.custom {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #6ee7b7 !important;
+}

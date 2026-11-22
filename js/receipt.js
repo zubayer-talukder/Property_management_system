@@ -1,9 +1,93 @@
+/* ── Multi-Gateway & Dynamic QR Configuration ─────────────── */
+const PAYMENT_GATEWAYS = {
+  bkash: {
+    id: 'bkash',
+    name: 'বিকাশ (bKash)',
+    badgeTitle: 'বিকাশ বাংলা QR পেমেন্ট',
+    label: 'বিকাশ পার্সোনাল নম্বর:',
+    shortName: 'বিকাশ',
+    number: '01521752871',
+    accName: 'ABDULLAH ZUBAYER TALUKDER',
+    defaultQr: 'assets/bkash-qr-matrix.png',
+    themeColor: '#e11d48',
+    type: 'সেন্ড মানি (Send Money)',
+    sublabel: '01521752871 (সেন্ড মানি)'
+  },
+  cellfin: {
+    id: 'cellfin',
+    name: 'CellFin (ইসলামী ব্যাংক)',
+    badgeTitle: 'CellFin বাংলা QR (ইসলামী ব্যাংক)',
+    label: 'সেলফিন / মোবাইল নম্বর:',
+    shortName: 'CellFin',
+    number: '01533958357',
+    accName: 'ABDULLAH ZUBAYER TALUKDER',
+    defaultQr: 'assets/cellfin-qr-matrix.png',
+    themeColor: '#047857',
+    type: 'সেন্ড মানি / ফান্ড ট্রান্সফার',
+    sublabel: '01533958357 (CellFin)'
+  }
+};
+
+window.activeSlipGateway = 'bkash';
+
+function getBillPaymentConfig(b) {
+  const gwKey = (b && b.paymentGateway === 'cellfin') ? 'cellfin' : 'bkash';
+  const gw = PAYMENT_GATEWAYS[gwKey];
+  const qrSrc = (b && b.customQr) ? b.customQr : gw.defaultQr;
+  const isCustom = Boolean(b && b.customQr);
+  return { gw, qrSrc, isCustom, gwKey };
+}
+
+// Compress uploaded custom QR to lightweight Base64 JPEG (under 60KB)
+window.compressQrImageFile = function(file, callback) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      const maxDim = 520;
+      let w = img.width;
+      let h = img.height;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+      callback(dataUrl);
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
 /* ── WhatsApp Sharing & Money Receipt ───────────────────────── */
 function shareBillWhatsApp(room, bill, prop) {
   if (!room.tenant?.phone) { toast('ভাড়াটিয়ার ফোন নম্বর নেই।', 'warn'); return; }
   const cleanPhone = room.tenant.phone.replace(/[^0-9]/g, '');
   const intlPhone = cleanPhone.startsWith('880') ? cleanPhone : cleanPhone.startsWith('0') ? '88' + cleanPhone : '880' + cleanPhone;
   const payableAmt = tk(bill.due) > 0 ? tk(bill.due) : (tk(bill.paid) === 0 ? tk(bill.total) : 0);
+  const { gw, isCustom } = getBillPaymentConfig(bill);
+
+  let payMsg = '';
+  if (payableAmt > 0) {
+    payMsg = `--------------------------------
+📲 *${gw.shortName} পেমেন্ট (${gw.type}):*
+• ${gw.label} *${gw.number}*
+• হিসাবধারীর নাম: *${gw.accName}*
+• প্রদেয় টাকার পরিমাণ: *৳${payableAmt.toLocaleString('en-IN')}*
+• রেফারেন্স: *রুম ${room.number}*
+${isCustom ? `(এই বিলের জন্য নির্দিষ্ট ৳${payableAmt.toLocaleString('en-IN')} টাকার ডায়নামিক QR কোড স্লিপে যুক্ত আছে, স্ক্যান করলেই টাকা সরাসরি বসে যাবে)\n` : `(বিকাশ, সেলফিন বা যেকোনো ব্যাংকের বাংলা QR স্ক্যান করেও পেমেন্ট করতে পারবেন)\n`}--------------------------------\n`;
+  }
 
   const msg = `*বাড়ি ভাড়া ও ইউটিলিটি বিল — ${monthLabel(bill.month)}*
 *${prop.name}* (রুম নং: *${room.number}*)
@@ -15,13 +99,7 @@ function shareBillWhatsApp(room, bill, prop) {
 ${tk(bill.other) > 0 ? `• অন্যান্য চার্জ: ৳${tk(bill.other).toLocaleString('en-IN')}\n` : ''}${tk(bill.prevBalance) > 0 ? `• পূর্বের বকেয়া: +৳${tk(bill.prevBalance).toLocaleString('en-IN')}\n` : ''}${tk(bill.prevBalance) < 0 ? `• পূর্বের অতিরিক্ত জমা সমন্বয়: -৳${Math.abs(tk(bill.prevBalance)).toLocaleString('en-IN')}\n` : ''}--------------------------------
 *সর্বমোট বিল: ৳${tk(bill.total).toLocaleString('en-IN')}*
 পরিশোধিত: ৳${tk(bill.paid).toLocaleString('en-IN')}
-${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*অতিরিক্ত জমা (পরবর্তী মাসে সমন্বয় হবে): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `নোট: ${bill.comment}\n` : ''}--------------------------------
-${payableAmt > 0 ? `📲 *বিকাশ পেমেন্ট (Send Money):*
-• বিকাশ পার্সোনাল: *01521752871*
-• প্রদেয় টাকার পরিমাণ: *৳${payableAmt.toLocaleString('en-IN')}*
-• রেফারেন্স: *রুম ${room.number}*
-(বিকাশ বা ব্যাংক অ্যাপের বাংলা QR কোড স্ক্যান করেও দিতে পারবেন)
---------------------------------\n` : ''}ধন্যবাদ!`;
+${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*অতিরিক্ত জমা (পরবর্তী মাসে সমন্বয় হবে): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `নোট: ${bill.comment}\n` : ''}${payMsg}ধন্যবাদ!`;
   const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
@@ -160,8 +238,24 @@ window.openReceiptModal = function(rid) {
     el('receipt-amount-words').textContent = wordStr;
   }
 
-  // Populate bKash Bangla QR details inside Money Receipt
+  // Populate Payment Gateway & Bangla QR details inside Money Receipt
   const payableAmt = tk(b.due) > 0 ? tk(b.due) : (tk(b.paid) === 0 ? tk(b.total) : 0);
+  const { gw, qrSrc, isCustom } = getBillPaymentConfig(b);
+
+  if (el('receipt-qr-header-tag')) el('receipt-qr-header-tag').innerHTML = `<i class="fa-solid fa-qrcode"></i> ${gw.shortName.toUpperCase()} BANGLA QR`;
+  if (el('receipt-qr-img')) el('receipt-qr-img').src = qrSrc;
+  if (el('receipt-qr-sublabel')) {
+    el('receipt-qr-sublabel').innerHTML = isCustom
+      ? `<strong style="color:var(--green)">✓ কাস্টম ডায়নামিক QR</strong> (${gw.shortName})`
+      : `<strong>${gw.number}</strong> (${gw.type})`;
+  }
+  if (el('receipt-qr-badge-title')) el('receipt-qr-badge-title').innerHTML = `<i class="fa-solid fa-mobile-screen-button"></i> ${gw.badgeTitle}`;
+  if (el('receipt-qr-send-type')) el('receipt-qr-send-type').textContent = gw.type;
+  if (el('receipt-qr-acc-lbl')) el('receipt-qr-acc-lbl').textContent = gw.label;
+  if (el('receipt-qr-acc-num')) {
+    el('receipt-qr-acc-num').textContent = gw.number;
+    el('receipt-qr-acc-num').className = 'qg-val ' + (gw.id === 'cellfin' ? 'text-green' : 'text-pink');
+  }
   if (el('receipt-qr-payable-amt')) el('receipt-qr-payable-amt').textContent = fmt(payableAmt > 0 ? payableAmt : b.total);
   if (el('receipt-qr-ref')) el('receipt-qr-ref').textContent = `রুম নং: ${room.number}`;
 
@@ -176,13 +270,9 @@ window.openReceiptModal = function(rid) {
   openModal('modal-receipt');
 };
 
-/* ── Dedicated bKash Bangla QR Payment Slip ───────────────────── */
-window.openPaymentSlipModal = function(rid) {
-  const p = getActiveProperty(); if (!p) return;
-  const room = p.rooms.find(r => r.id === rid); if (!room) return;
-  const b = getBill(room, STATE.activeMonth);
-
-  STATE.activeReceiptRoomId = rid;
+/* ── Dedicated Multi-Gateway & Dynamic QR Payment Slip ───────── */
+function renderPaymentSlipUI(room, b, p) {
+  const { gw, qrSrc, isCustom, gwKey } = getBillPaymentConfig(b);
 
   if (el('ps-prop-name')) el('ps-prop-name').textContent = p.name;
   if (el('ps-prop-addr')) el('ps-prop-addr').textContent = p.address;
@@ -207,12 +297,97 @@ window.openPaymentSlipModal = function(rid) {
     }
   }
 
+  // Switch buttons active state
+  if (el('ps-gw-btn-bkash')) el('ps-gw-btn-bkash').className = 'ps-gw-btn' + (gwKey === 'bkash' ? ' active' : '');
+  if (el('ps-gw-btn-cellfin')) el('ps-gw-btn-cellfin').className = 'ps-gw-btn' + (gwKey === 'cellfin' ? ' active' : '');
+
+  // QR Image and Header
+  if (el('ps-qr-image')) el('ps-qr-image').src = qrSrc;
+  if (el('ps-qr-header-tag')) el('ps-qr-header-tag').innerHTML = `<i class="fa-solid fa-qrcode"></i> ${gw.shortName.toUpperCase()} BANGLA QR`;
+
+  // Custom QR badge & clear button
+  if (el('ps-qr-status-badge')) {
+    if (isCustom) {
+      el('ps-qr-status-badge').className = 'ps-qr-status-pill custom';
+      el('ps-qr-status-badge').innerHTML = `<i class="fa-solid fa-circle-check"></i> কাস্টম ডায়নামিক QR (${fmt(displayAmt)})`;
+      if (el('ps-btn-clear-custom')) el('ps-btn-clear-custom').style.display = 'inline-flex';
+    } else {
+      el('ps-qr-status-badge').className = 'ps-qr-status-pill';
+      el('ps-qr-status-badge').innerHTML = `ডিফল্ট ${gw.shortName} QR`;
+      if (el('ps-btn-clear-custom')) el('ps-btn-clear-custom').style.display = 'none';
+    }
+  }
+
+  // Gateway Info Box
+  if (el('ps-gw-pill')) {
+    el('ps-gw-pill').className = 'ps-i-val ' + (gwKey === 'cellfin' ? 'ps-cellfin-pill' : 'ps-bkash-pill');
+    el('ps-gw-pill').innerHTML = `<i class="fa-solid ${gwKey === 'cellfin' ? 'fa-building-columns' : 'fa-mobile-screen'}"></i> ${gw.badgeTitle}`;
+  }
+  if (el('ps-num-label')) el('ps-num-label').textContent = gw.label;
+  if (el('ps-acc-number')) {
+    el('ps-acc-number').textContent = gw.number;
+    el('ps-acc-number').className = 'ps-i-val ' + (gwKey === 'cellfin' ? 'ps-cellfin-num' : 'ps-bkash-num');
+  }
+  if (el('ps-acc-name')) el('ps-acc-name').textContent = gw.accName;
+  if (el('ps-send-type')) {
+    el('ps-send-type').textContent = gw.type;
+    el('ps-send-type').style.color = gw.themeColor;
+  }
+
+  // Download Link
+  if (el('ps-btn-download-qr')) {
+    el('ps-btn-download-qr').href = qrSrc;
+    el('ps-btn-download-qr').download = `${gw.shortName.toLowerCase()}-payment-qr-${room.number}.png`;
+  }
+
+  // WhatsApp Button
   if (el('ps-btn-whatsapp')) {
     el('ps-btn-whatsapp').onclick = () => shareBillWhatsApp(room, b, p);
   }
+}
 
+window.openPaymentSlipModal = function(rid) {
+  const p = getActiveProperty(); if (!p) return;
+  const room = p.rooms.find(r => r.id === rid); if (!room) return;
+  const b = getBill(room, STATE.activeMonth);
+
+  STATE.activeReceiptRoomId = rid;
+  renderPaymentSlipUI(room, b, p);
   openModal('modal-payment-slip');
 };
+
+window.switchActiveSlipGateway = function(gwKey) {
+  const p = getActiveProperty(); if (!p) return;
+  const rid = STATE.activeReceiptRoomId; if (!rid) return;
+  const room = p.rooms.find(r => r.id === rid); if (!room) return;
+  const b = getBill(room, STATE.activeMonth);
+
+  b.paymentGateway = gwKey;
+  save();
+
+  renderPaymentSlipUI(room, b, p);
+  toast(`পেমেন্ট মেথড: ${PAYMENT_GATEWAYS[gwKey].name} সক্রিয় করা হয়েছে`, 'success');
+};
+
+window.copyActivePaymentNumber = function() {
+  const p = getActiveProperty();
+  const rid = STATE.activeReceiptRoomId;
+  const room = p?.rooms?.find(r => r.id === rid);
+  const b = room ? getBill(room, STATE.activeMonth) : null;
+  const { gw } = getBillPaymentConfig(b);
+  const num = gw ? gw.number : '01521752871';
+
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(num).then(() => {
+      toast(`${gw.shortName} নম্বর ${num} কপি হয়েছে!`, 'success');
+    }).catch(() => {
+      toast(`নম্বর: ${num}`, 'info');
+    });
+  } else {
+    toast(`নম্বর: ${num}`, 'info');
+  }
+};
+window.copyBkashNumber = window.copyActivePaymentNumber;
 
 window.printPaymentSlip = function() {
   const p = getActiveProperty();
@@ -223,7 +398,7 @@ window.printPaymentSlip = function() {
   const safePropName = (p?.name || 'PMS').replace(/[\s\/\\:*?"<>|]+/g, '_');
   const safeRoom = String(roomNo).replace(/[\s\/\\:*?"<>|]+/g, '_');
   const safeMonth = String(monthTxt).replace(/[\s\/\\:*?"<>|]+/g, '_');
-  document.title = `বিকাশ_পেমেন্ট_স্লিপ_${safePropName}_রুম_${safeRoom}_${safeMonth}`;
+  document.title = `পেমেন্ট_স্লিপ_${safePropName}_রুম_${safeRoom}_${safeMonth}`;
 
   window.print();
 
@@ -232,17 +407,39 @@ window.printPaymentSlip = function() {
   }, 1000);
 };
 
-window.copyBkashNumber = function() {
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText('01521752871').then(() => {
-      toast('বিকাশ নম্বর 01521752871 কপি হয়েছে!', 'success');
-    }).catch(() => {
-      toast('বিকাশ নম্বর: 01521752871', 'info');
-    });
-  } else {
-    toast('বিকাশ নম্বর: 01521752871', 'info');
-  }
-};
+// Wire slip quick custom QR upload events
+el('ps-btn-trigger-upload')?.addEventListener('click', () => {
+  el('ps-custom-qr-input')?.click();
+});
+
+el('ps-custom-qr-input')?.addEventListener('change', (e) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+  const p = getActiveProperty(); if (!p) return;
+  const rid = STATE.activeReceiptRoomId; if (!rid) return;
+  const room = p.rooms.find(r => r.id === rid); if (!room) return;
+  const b = getBill(room, STATE.activeMonth);
+
+  window.compressQrImageFile(file, function(dataUrl) {
+    b.customQr = dataUrl;
+    save();
+    renderPaymentSlipUI(room, b, p);
+    toast('এই বিলের জন্য কাস্টম ডায়নামিক QR সফলভাবে সেট হয়েছে!', 'success');
+  });
+  e.target.value = '';
+});
+
+el('ps-btn-clear-custom')?.addEventListener('click', () => {
+  const p = getActiveProperty(); if (!p) return;
+  const rid = STATE.activeReceiptRoomId; if (!rid) return;
+  const room = p.rooms.find(r => r.id === rid); if (!room) return;
+  const b = getBill(room, STATE.activeMonth);
+
+  delete b.customQr;
+  save();
+  renderPaymentSlipUI(room, b, p);
+  toast('কাস্টম QR মুছে ফেলা হয়েছে। ডিফল্ট QR সক্রিয়।', 'info');
+});
 
 window.printReceipt = function() {
   const p = getActiveProperty();
