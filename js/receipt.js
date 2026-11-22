@@ -191,13 +191,69 @@ window.compressQrImageFile = function(file, callback) {
   reader.readAsDataURL(file);
 };
 
-/* ── WhatsApp Sharing & Money Receipt ───────────────────────── */
-function shareBillWhatsApp(room, bill, prop) {
+/* ── WhatsApp Sharing & Web Share API ───────────────────────── */
+async function getQrFileFromSrc(qrSrc, fileName = 'payment-qr.png') {
+  try {
+    if (!qrSrc) return null;
+    if (qrSrc.startsWith('data:')) {
+      const parts = qrSrc.split(',');
+      const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/png';
+      const bstr = atob(parts[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      return new File([u8arr], fileName, { type: mime });
+    } else {
+      const res = await fetch(qrSrc);
+      const blob = await res.blob();
+      return new File([blob], fileName, { type: blob.type || 'image/png' });
+    }
+  } catch (e) {
+    console.warn('Error creating file from QR src:', e);
+    return null;
+  }
+}
+
+async function copyImageToClipboard(imgFile) {
+  if (!navigator.clipboard || !window.ClipboardItem) return false;
+  try {
+    if (imgFile.type === 'image/png') {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': imgFile })
+      ]);
+      return true;
+    }
+    // Convert jpeg/other to png blob via canvas
+    const img = new Image();
+    img.src = URL.createObjectURL(imgFile);
+    await new Promise(r => { img.onload = r; });
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const pngBlob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    URL.revokeObjectURL(img.src);
+    if (pngBlob) {
+      await navigator.clipboard.write([
+        new ClipboardItem({ 'image/png': pngBlob })
+      ]);
+      return true;
+    }
+  } catch (err) {
+    console.debug('Clipboard write image ignored:', err);
+  }
+  return false;
+}
+
+async function shareBillWhatsApp(room, bill, prop) {
   if (!room.tenant?.phone) { toast('ভাড়াটিয়ার ফোন নম্বর নেই।', 'warn'); return; }
   const cleanPhone = room.tenant.phone.replace(/[^0-9]/g, '');
   const intlPhone = cleanPhone.startsWith('880') ? cleanPhone : cleanPhone.startsWith('0') ? '88' + cleanPhone : '880' + cleanPhone;
   const payableAmt = tk(bill.due) > 0 ? tk(bill.due) : (tk(bill.paid) === 0 ? tk(bill.total) : 0);
-  const { gw, isCustom } = getBillPaymentConfig(bill);
+  const { gw, qrSrc, isCustom } = getBillPaymentConfig(bill);
 
   let payMsg = '';
   if (payableAmt > 0) {
@@ -222,6 +278,39 @@ ${tk(bill.other) > 0 ? `• অন্যান্য চার্জ: ৳${tk(bi
 *সর্বমোট বিল: ৳${tk(bill.total).toLocaleString('en-IN')}*
 পরিশোধিত: ৳${tk(bill.paid).toLocaleString('en-IN')}
 ${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*অতিরিক্ত জমা (পরবর্তী মাসে সমন্বয় হবে): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `নোট: ${bill.comment}\n` : ''}${payMsg}ধন্যবাদ!`;
+
+  const fileName = `${gw.shortName.toLowerCase()}-qr-room-${room.number}.png`;
+  const qrFile = await getQrFileFromSrc(qrSrc, fileName);
+
+  // 1. Mobile Web Share API: share bill text and QR image file natively
+  if (qrFile && navigator.canShare && navigator.canShare({ files: [qrFile] })) {
+    try {
+      await navigator.share({
+        title: `বাড়ি ভাড়া বিল — রুম ${room.number}`,
+        text: msg,
+        files: [qrFile]
+      });
+      toast('✓ বিল ও কিউআর ছবি সফলভাবে শেয়ার করা হয়েছে!', 'success');
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        // User dismissed share sheet, no further action needed
+        return;
+      }
+      console.warn('Web Share API error, using fallback:', err);
+    }
+  }
+
+  // 2. Desktop Fallback: Copy QR picture to clipboard so landlord can simply Ctrl+V into WhatsApp Web
+  if (qrFile) {
+    copyImageToClipboard(qrFile).then(copied => {
+      if (copied) {
+        toast('QR ছবি ক্লিপবোর্ডে কপি হয়েছে! WhatsApp এ Ctrl+V চাপুন।', 'info');
+      }
+    });
+  }
+
+  // 3. Open WhatsApp Click-to-Chat
   const url = `https://wa.me/${intlPhone}?text=${encodeURIComponent(msg)}`;
   window.open(url, '_blank');
 }
