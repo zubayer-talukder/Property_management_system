@@ -82,7 +82,7 @@ function renderRoomsTable(p) {
   const m = STATE.activeMonth;
   const tbody = el('rooms-tbody');
   if (!p.rooms.length) {
-    tbody.innerHTML = `<tr><td colspan="13" class="text-center" style="padding:2rem;color:var(--text-muted)">কোনো রুম নেই। "রুম যুক্ত করুন" বাটনে ক্লিক করুন।</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="13" class="text-center" style="padding:2rem;color:var(--text-muted)">${t('no_properties_msg', 'কোনো রুম নেই। "রুম যুক্ত করুন" বাটনে ক্লিক করুন।')}</td></tr>`;
     return;
   }
   tbody.innerHTML = p.rooms.map(r => {
@@ -90,14 +90,17 @@ function renderRoomsTable(p) {
     const b = getBill(r, m);
     const isVacant = !tenant;
     const statusPill = isVacant
-      ? `<span class="pill pill-vacant">খালি</span>`
+      ? `<span class="pill pill-vacant">${t('status_vacant')}</span>`
       : b.due <= 0 && b.total > 0
-        ? `<span class="pill pill-paid"><i class="fa-solid fa-check"></i> পরিশোধ</span>`
+        ? `<span class="pill pill-paid"><i class="fa-solid fa-check"></i> ${t('status_paid')}</span>`
         : b.due > 0 && b.paid > 0
-          ? `<span class="pill pill-partial">আংশিক</span>`
+          ? `<span class="pill pill-partial">${t('status_partial')}</span>`
           : b.advance > 0
-            ? `<span class="pill pill-paid" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0"><i class="fa-solid fa-plus"></i> অগ্রিম</span>`
-            : `<span class="pill pill-due">বকেয়া</span>`;
+            ? `<span class="pill pill-paid" style="background:#ecfdf5;color:#047857;border:1px solid #a7f3d0"><i class="fa-solid fa-plus"></i> ${t('status_advance')}</span>`
+            : `<span class="pill pill-due">${t('status_due')}</span>`;
+
+    const dueTxt = t('status_due');
+    const advanceTxt = t('status_advance');
 
     return `<tr data-room-id="${r.id}">
       <td class="room-num">
@@ -105,7 +108,7 @@ function renderRoomsTable(p) {
       </td>
       <td>
         ${isVacant
-          ? `<button class="btn btn-success btn-sm" onclick="openTenantModal('${r.id}','add')"><i class="fa-solid fa-user-plus"></i> + ভাড়াটিয়া</button>`
+          ? `<button class="btn btn-success btn-sm" onclick="openTenantModal('${r.id}','add')"><i class="fa-solid fa-user-plus"></i> + ${t('th_tenant')}</button>`
           : `<div class="tenant-cell-content">
               ${tenant.photo
                 ? `<img src="${tenant.photo}" class="tenant-table-avatar" alt="${tenant.name}">`
@@ -119,24 +122,24 @@ function renderRoomsTable(p) {
       </td>
       <td class="amount total">
         ${isVacant ? '-' : fmt(b.total)}
-        ${!isVacant && tk(b.electricity) > 0 ? `<div style="font-size:0.72rem;color:var(--amber);font-weight:600" title="বিদ্যুৎ বিল"><i class="fa-solid fa-bolt"></i> ${fmt(b.electricity)}</div>` : ''}
-        ${!isVacant && tk(b.prevBalance) > 0 ? `<div style="font-size:0.7rem;color:var(--red);font-weight:700" title="পূর্বের বকেয়া যোগ হয়েছে"><i class="fa-solid fa-clock-rotate-left"></i> +${fmt(b.prevBalance)} বকেয়া</div>` : ''}
-        ${!isVacant && tk(b.prevBalance) < 0 ? `<div style="font-size:0.7rem;color:var(--green);font-weight:700" title="পূর্বের অতিরিক্ত জমা বাদ হয়েছে"><i class="fa-solid fa-hand-holding-dollar"></i> -${fmt(Math.abs(b.prevBalance))} সমন্বয়</div>` : ''}
+        ${!isVacant && tk(b.electricity) > 0 ? `<div style="font-size:0.72rem;color:var(--amber);font-weight:600" title="${t('th_electricity')}"><i class="fa-solid fa-bolt"></i> ${fmt(b.electricity)}</div>` : ''}
+        ${!isVacant && tk(b.prevBalance) > 0 ? `<div style="font-size:0.7rem;color:var(--red);font-weight:700" title="Dues added"><i class="fa-solid fa-clock-rotate-left"></i> +${fmt(b.prevBalance)} ${dueTxt}</div>` : ''}
+        ${!isVacant && tk(b.prevBalance) < 0 ? `<div style="font-size:0.7rem;color:var(--green);font-weight:700" title="Advance credit"><i class="fa-solid fa-hand-holding-dollar"></i> -${fmt(Math.abs(b.prevBalance))} ${advanceTxt}</div>` : ''}
       </td>
       <td class="amount paid">${isVacant ? '-' : fmt(b.paid)}</td>
       <td class="amount due">
-        ${isVacant ? '-' : b.due > 0 ? fmt(b.due) : b.advance > 0 ? `<span style="color:var(--green);font-size:0.78rem;font-weight:700" title="পরবর্তী মাসে সমন্বয় হবে">+${fmt(b.advance)} অগ্রিম</span>` : '৳০'}
+        ${isVacant ? '-' : b.due > 0 ? fmt(b.due) : b.advance > 0 ? `<span style="color:var(--green);font-size:0.78rem;font-weight:700" title="Credit">+${fmt(b.advance)} ${advanceTxt}</span>` : '৳০'}
       </td>
       <td>${statusPill}</td>
       <td>${b.paidDate ? `<span style="font-size:0.75rem">${b.paidDate}</span>` : '-'}</td>
       <td>
         <div style="display:flex;gap:0.35rem;flex-wrap:wrap">
-          <button class="btn btn-warning btn-sm" onclick="openRoomModal('${r.id}')"><i class="fa-solid fa-gear"></i> রুম</button>
-          ${!isVacant ? `<button class="btn btn-secondary btn-sm" onclick="openBillModal('${r.id}')"><i class="fa-solid fa-coins"></i> বিল</button>` : ''}
+          <button class="btn btn-warning btn-sm" onclick="openRoomModal('${r.id}')"><i class="fa-solid fa-gear"></i> ${t('th_room')}</button>
+          ${!isVacant ? `<button class="btn btn-secondary btn-sm" onclick="openBillModal('${r.id}')"><i class="fa-solid fa-coins"></i> ${t('btn_bill')}</button>` : ''}
           ${!isVacant ? `<button class="btn btn-secondary btn-sm" onclick="openTenantModal('${r.id}','view')"><i class="fa-solid fa-user"></i> KYC</button>` : ''}
-          ${!isVacant ? `<button class="btn btn-primary btn-sm" onclick="openReceiptModal('${r.id}')" title="মানি রিসিট"><i class="fa-solid fa-receipt"></i> রিসিট</button>` : ''}
-          ${!isVacant ? `<button class="btn btn-pink btn-sm" onclick="openPaymentSlipModal('${r.id}')" title="বিকাশ কিউআর পেমেন্ট স্লিপ"><i class="fa-solid fa-qrcode"></i> QR বিল</button>` : ''}
-          <button class="btn btn-success btn-sm btn-icon" onclick="openTenantModal('${r.id}','add')" title="এই রুমে নতুন ভাড়াটিয়া যুক্ত করুন"><i class="fa-solid fa-user-plus"></i></button>
+          ${!isVacant ? `<button class="btn btn-primary btn-sm" onclick="openReceiptModal('${r.id}')" title="${t('btn_receipt')}"><i class="fa-solid fa-receipt"></i> ${t('btn_receipt')}</button>` : ''}
+          ${!isVacant ? `<button class="btn btn-pink btn-sm" onclick="openPaymentSlipModal('${r.id}')" title="${t('btn_slip')}"><i class="fa-solid fa-qrcode"></i> ${t('btn_slip')}</button>` : ''}
+          <button class="btn btn-success btn-sm btn-icon" onclick="openTenantModal('${r.id}','add')" title="${t('add_tenant_btn')}"><i class="fa-solid fa-user-plus"></i></button>
           <button class="btn btn-danger btn-sm btn-icon" onclick="deleteRoom('${r.id}')" title="Delete Room"><i class="fa-solid fa-trash-can"></i></button>
         </div>
       </td>
@@ -337,7 +340,7 @@ el('btn-auto-generate').addEventListener('click', () => {
 el('btn-add-room').addEventListener('click', () => {
   if (!isLoggedIn()) { triggerGoogleLogin(); return; }
   const p = getActiveProperty(); if (!p) return;
-  el('room-modal-title').innerHTML = '<i class="fa-solid fa-door-open"></i> নতুন রুম যুক্ত করুন';
+  el('room-modal-title').innerHTML = '<i class="fa-solid fa-door-open"></i> ' + (typeof t === 'function' ? t('add_room_btn', 'নতুন রুম যুক্ত করুন') : 'নতুন রুম যুক্ত করুন');
   el('form-room').reset();
   el('form-room').dataset.roomId = '';
   openModal('modal-room');
@@ -367,7 +370,7 @@ el('form-room').addEventListener('submit', e => {
       b.other = room.otherBill;
       recalcBill(b);
     }
-    toast('রুম আপডেট হয়েছে।', 'success');
+    toast(window.currentLang === 'en' ? 'Room updated.' : 'রুম আপডেট হয়েছে।', 'success');
   } else {
     const room = makeRoom(p.id, fd.get('roomNumber'));
     room.baseRent = tk(fd.get('baseRent'));
@@ -376,7 +379,7 @@ el('form-room').addEventListener('submit', e => {
     room.wifiBill = tk(fd.get('wifiBill'));
     room.otherBill= tk(fd.get('otherBill'));
     p.rooms.push(room);
-    toast('রুম যুক্ত হয়েছে!', 'success');
+    toast(window.currentLang === 'en' ? 'Room added!' : 'রুম যুক্ত হয়েছে!', 'success');
   }
   save(); closeModal('modal-room'); renderDetailPage();
 });
@@ -384,7 +387,7 @@ el('form-room').addEventListener('submit', e => {
 window.openRoomModal = function(rid) {
   const p = getActiveProperty(); if (!p) return;
   const room = p.rooms.find(r => r.id === rid); if (!room) return;
-  el('room-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> রুম আপডেট করুন';
+  el('room-modal-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> ' + (window.currentLang === 'en' ? 'Edit Room' : 'রুম আপডেট করুন');
   el('form-room').dataset.roomId = rid;
   el('room-number').value   = room.number;
   el('room-base-rent').value= room.baseRent;
@@ -396,11 +399,11 @@ window.openRoomModal = function(rid) {
 };
 
 window.deleteRoom = function(rid) {
-  if (!confirm('এই রুম মুছে ফেলবেন?')) return;
+  if (!confirm(window.currentLang === 'en' ? 'Delete this room?' : 'এই রুম মুছে ফেলবেন?')) return;
   const p = getActiveProperty(); if (!p) return;
   p.rooms = p.rooms.filter(r => r.id !== rid);
   save(); renderDetailPage();
-  toast('রুম মুছে ফেলা হয়েছে।', 'warn');
+  toast(window.currentLang === 'en' ? 'Room deleted.' : 'রুম মুছে ফেলা হয়েছে।', 'warn');
 };
 
 /* ── Bill Modal ─────────────────────────────────────────────── */
@@ -412,7 +415,7 @@ window.openBillModal = function(rid) {
     ? b.prevBalance
     : calculateCarriedDuesForMonth(room, STATE.activeMonth);
 
-  el('bill-room-label').textContent = `রুম ${room.number} — ${monthLabel(STATE.activeMonth)}`;
+  el('bill-room-label').textContent = `${window.currentLang === 'en' ? 'Room' : 'রুম'} ${room.number} — ${monthLabel(STATE.activeMonth)}`;
   el('bill-rent').value       = b.rent;
   el('bill-electricity').value= b.electricity;
   el('bill-water').value      = b.water;
@@ -460,15 +463,15 @@ function updateBillTotalsUI(b) {
   if (due > 0) {
     el('bill-due-display').textContent = fmt(due);
     el('bill-due-display').style.color = 'var(--red)';
-    if (el('bill-due-label')) el('bill-due-label').textContent = 'বকেয়া (Due)';
+    if (el('bill-due-label')) el('bill-due-label').textContent = window.currentLang === 'en' ? 'Due Amount' : 'বকেয়া (Due)';
   } else if (advance > 0) {
     el('bill-due-display').textContent = fmt(advance);
     el('bill-due-display').style.color = 'var(--green)';
-    if (el('bill-due-label')) el('bill-due-label').textContent = 'অতিরিক্ত জমা (Advance)';
+    if (el('bill-due-label')) el('bill-due-label').textContent = window.currentLang === 'en' ? 'Advance Credit' : 'অতিরিক্ত জমা (Advance)';
   } else {
     el('bill-due-display').textContent = '৳০';
     el('bill-due-display').style.color = 'var(--text-primary)';
-    if (el('bill-due-label')) el('bill-due-label').textContent = 'পরিশোধিত (Paid)';
+    if (el('bill-due-label')) el('bill-due-label').textContent = window.currentLang === 'en' ? 'Paid in Full' : 'পরিশোধিত (Paid)';
   }
 
   // Helper Hint Text

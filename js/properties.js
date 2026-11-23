@@ -64,7 +64,7 @@ function makeRoom(propId, num) {
 function resetPropertyForm() {
   el('form-property').reset();
   el('form-property').dataset.editId = '';
-  el('modal-property-title').innerHTML = '<i class="fa-solid fa-house"></i> নতুন প্রপার্টি যুক্ত করুন';
+  el('modal-property-title').innerHTML = '<i class="fa-solid fa-house"></i> ' + (typeof t === 'function' ? t('property_modal_add', 'নতুন প্রপার্টি যুক্ত করুন') : 'নতুন প্রপার্টি যুক্ত করুন');
   el('multi-owners-group').classList.add('hidden');
   el('chk-multi-owner').checked = false;
 }
@@ -78,8 +78,8 @@ function renderPropertiesPage() {
   if (!STATE.properties.length) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">
       <div class="es-icon"><i class="fa-solid fa-city"></i></div>
-      <h3>কোনো প্রপার্টি নেই</h3>
-      <p>${isLoggedIn() ? '"নতুন প্রপার্টি যুক্ত করুন" বাটনে ক্লিক করুন।' : 'প্রপার্টি দেখতে প্রথমে লগইন করুন।'}</p>
+      <h3>${t('no_properties_msg', 'কোনো প্রপার্টি নেই')}</h3>
+      <p>${isLoggedIn() ? (window.currentLang === 'en' ? 'Click "Add New Property" to get started.' : '"নতুন প্রপার্টি যুক্ত করুন" বাটনে ক্লিক করুন।') : (window.currentLang === 'en' ? 'Please sign in to view properties.' : 'প্রপার্টি দেখতে প্রথমে লগইন করুন।')}</p>
     </div>`;
     return;
   }
@@ -105,14 +105,14 @@ function renderPropertiesPage() {
       </div>
       <div class="property-card-body">
         <div class="property-mini-stats">
-          <div class="pms"><div class="pms-val">${p.rooms.length}</div><div class="pms-lbl">মোট রুম</div></div>
-          <div class="pms green"><div class="pms-val">${paid}</div><div class="pms-lbl">পরিশোধিত</div></div>
-          <div class="pms amber"><div class="pms-val">${due}</div><div class="pms-lbl">বকেয়া</div></div>
-          <div class="pms cyan"><div class="pms-val">${vacant}</div><div class="pms-lbl">খালি</div></div>
+          <div class="pms"><div class="pms-val">${p.rooms.length}</div><div class="pms-lbl">${t('metric_total_rooms')}</div></div>
+          <div class="pms green"><div class="pms-val">${paid}</div><div class="pms-lbl">${t('status_paid')}</div></div>
+          <div class="pms amber"><div class="pms-val">${due}</div><div class="pms-lbl">${t('status_due')}</div></div>
+          <div class="pms cyan"><div class="pms-val">${vacant}</div><div class="pms-lbl">${t('status_vacant')}</div></div>
         </div>
         <div class="property-card-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openPropertyDetail('${p.id}')"><i class="fa-solid fa-clipboard-list"></i> বিস্তারিত দেখুন</button>
-          ${p.owners.length > 1 ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openOwnerSplit('${p.id}')"><i class="fa-solid fa-users"></i> Split দেখুন</button>` : ''}
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openPropertyDetail('${p.id}')"><i class="fa-solid fa-clipboard-list"></i> ${window.currentLang === 'en' ? 'View Details' : 'বিস্তারিত দেখুন'}</button>
+          ${p.owners.length > 1 ? `<button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();openOwnerSplit('${p.id}')"><i class="fa-solid fa-users"></i> Split</button>` : ''}
         </div>
       </div>
     </div>`;
@@ -126,7 +126,7 @@ window.editProperty = function(id) {
   el('prop-room-count').value = p.rooms.length;
   el('prop-room-count').disabled = true;
   el('form-property').dataset.editId = id;
-  el('modal-property-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> প্রপার্টি আপডেট করুন';
+  el('modal-property-title').innerHTML = '<i class="fa-solid fa-pen-to-square"></i> ' + (typeof t === 'function' ? t('property_modal_edit', 'প্রপার্টি আপডেট করুন') : 'প্রপার্টি আপডেট করুন');
   if (p.owners.length > 1) {
     el('chk-multi-owner').checked = true;
     el('multi-owners-group').classList.remove('hidden');
@@ -136,8 +136,8 @@ window.editProperty = function(id) {
 };
 
 window.deleteProperty = function(id) {
-  if (!confirm('এই প্রপার্টি এবং সকল ডাটা মুছে ফেলতে চান?')) return;
+  if (!confirm(typeof t === 'function' ? t('confirm_delete_prop', 'এই প্রপার্টি এবং সকল ডাটা মুছে ফেলতে চান?') : 'এই প্রপার্টি এবং সকল ডাটা মুছে ফেলতে চান?')) return;
   STATE.properties = STATE.properties.filter(p => p.id !== id);
   save(); renderPropertiesPage();
-  toast('প্রপার্টি মুছে ফেলা হয়েছে।', 'warn');
+  toast(window.currentLang === 'en' ? 'Property deleted.' : 'প্রপার্টি মুছে ফেলা হয়েছে।', 'warn');
 };

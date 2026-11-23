@@ -263,20 +263,46 @@ async function shareBillWhatsApp(room, bill, prop) {
   const intlPhone = cleanPhone.startsWith('880') ? cleanPhone : cleanPhone.startsWith('0') ? '88' + cleanPhone : '880' + cleanPhone;
   const payableAmt = tk(bill.due) > 0 ? tk(bill.due) : (tk(bill.paid) === 0 ? tk(bill.total) : 0);
   const { gw, qrSrc, isCustom } = getBillPaymentConfig(bill);
+  const isEn = window.currentLang === 'en';
 
   let payMsg = '';
   if (payableAmt > 0) {
-    const bankLine = gw.bankName ? `• ব্যাংক এর নাম: *${gw.bankName}*\n` : '';
-    payMsg = `--------------------------------
+    if (isEn) {
+      const bankLine = gw.bankName ? `• Bank Name: *${gw.bankName}*\n` : '';
+      payMsg = `--------------------------------
+📲 *${gw.shortName} Payment (${gw.type}):*
+• ${gw.label} *${gw.number}*
+• Account Holder: *${gw.accName}*
+${bankLine}• Payable Amount: *৳${payableAmt.toLocaleString('en-IN')}*
+• Reference: *Room ${room.number}*
+${isCustom ? `(A dynamic QR code for ৳${payableAmt.toLocaleString('en-IN')} is attached to this bill slip)\n` : `(You can scan the Bangla QR or send money directly)\n`}--------------------------------\n`;
+    } else {
+      const bankLine = gw.bankName ? `• ব্যাংক এর নাম: *${gw.bankName}*\n` : '';
+      payMsg = `--------------------------------
 📲 *${gw.shortName} পেমেন্ট (${gw.type}):*
 • ${gw.label} *${gw.number}*
 • হিসাবধারীর নাম: *${gw.accName}*
 ${bankLine}• প্রদেয় টাকার পরিমাণ: *৳${payableAmt.toLocaleString('en-IN')}*
 • রেফারেন্স: *রুম ${room.number}*
 ${isCustom ? `(এই বিলের জন্য নির্দিষ্ট ৳${payableAmt.toLocaleString('en-IN')} টাকার ডায়নামিক QR কোড স্লিপে যুক্ত আছে, স্ক্যান করলেই টাকা সরাসরি বসে যাবে)\n` : `(বিকাশ, সেলফিন বা যেকোনো ব্যাংকের বাংলা QR স্ক্যান করেও পেমেন্ট করতে পারবেন)\n`}--------------------------------\n`;
+    }
   }
 
-  const msg = `*বাড়ি ভাড়া ও ইউটিলিটি বিল — ${monthLabel(bill.month)}*
+  let msg = '';
+  if (isEn) {
+    msg = `*House Rent & Utility Bill — ${monthLabel(bill.month)}*
+*${prop.name}* (Room No: *${room.number}*)
+Tenant: *${room.tenant.name}*
+--------------------------------
+• Base Rent: ৳${tk(bill.rent).toLocaleString('en-IN')}
+• Electricity Bill: ৳${tk(bill.electricity).toLocaleString('en-IN')}
+• Water / Gas / WiFi: ৳${(tk(bill.water)+tk(bill.gas)+tk(bill.wifi)).toLocaleString('en-IN')}
+${tk(bill.other) > 0 ? `• Other Service Charges: ৳${tk(bill.other).toLocaleString('en-IN')}\n` : ''}${tk(bill.prevBalance) > 0 ? `• Previous Due: +৳${tk(bill.prevBalance).toLocaleString('en-IN')}\n` : ''}${tk(bill.prevBalance) < 0 ? `• Advance Adjustment: -৳${Math.abs(tk(bill.prevBalance)).toLocaleString('en-IN')}\n` : ''}--------------------------------
+*Total Bill: ৳${tk(bill.total).toLocaleString('en-IN')}*
+Paid Amount: ৳${tk(bill.paid).toLocaleString('en-IN')}
+${tk(bill.due) > 0 ? `*Due Amount: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*Advance Credit (Adjusts next month): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `Note: ${bill.comment}\n` : ''}${payMsg}Thank you!`;
+  } else {
+    msg = `*বাড়ি ভাড়া ও ইউটিলিটি বিল — ${monthLabel(bill.month)}*
 *${prop.name}* (রুম নং: *${room.number}*)
 ভাড়াটিয়া: *${room.tenant.name}*
 --------------------------------
@@ -287,6 +313,7 @@ ${tk(bill.other) > 0 ? `• অন্যান্য চার্জ: ৳${tk(bi
 *সর্বমোট বিল: ৳${tk(bill.total).toLocaleString('en-IN')}*
 পরিশোধিত: ৳${tk(bill.paid).toLocaleString('en-IN')}
 ${tk(bill.due) > 0 ? `*বকেয়া: ৳${tk(bill.due).toLocaleString('en-IN')}*\n` : ''}${tk(bill.advance) > 0 ? `*অতিরিক্ত জমা (পরবর্তী মাসে সমন্বয় হবে): ৳${tk(bill.advance).toLocaleString('en-IN')}*\n` : ''}${bill.comment ? `নোট: ${bill.comment}\n` : ''}${payMsg}ধন্যবাদ!`;
+  }
 
   // 1. Copy QR picture to clipboard FIRST while current page is 100% focused!
   let copied = false;
@@ -340,6 +367,25 @@ function numberToBengaliWords(amount) {
   if (remainder > 0) words += units[remainder] + ' ';
 
   return (words.trim() || 'শূন্য') + ' টাকা মাত্র';
+}
+
+function numberToEnglishWords(amount) {
+  if (!amount || isNaN(amount) || amount <= 0) return 'Zero Taka Only';
+  const a = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten',
+    'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+  const b = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+  function numToWords(n) {
+    if (n === 0) return '';
+    if (n < 20) return a[n];
+    if (n < 100) return b[Math.floor(n / 10)] + (n % 10 !== 0 ? ' ' + a[n % 10] : '');
+    if (n < 1000) return a[Math.floor(n / 100)] + ' Hundred' + (n % 100 !== 0 ? ' ' + numToWords(n % 100) : '');
+    if (n < 100000) return numToWords(Math.floor(n / 1000)) + ' Thousand' + (n % 1000 !== 0 ? ' ' + numToWords(n % 1000) : '');
+    if (n < 10000000) return numToWords(Math.floor(n / 100000)) + ' Lakh' + (n % 100000 !== 0 ? ' ' + numToWords(n % 100000) : '');
+    return numToWords(Math.floor(n / 10000000)) + ' Crore' + (n % 10000000 !== 0 ? ' ' + numToWords(n % 10000000) : '');
+  }
+
+  return (numToWords(Math.round(amount)).trim() || 'Zero') + ' Taka Only';
 }
 
 window.openReceiptModal = function(rid) {
@@ -432,11 +478,12 @@ window.openReceiptModal = function(rid) {
   // In words (কথায়)
   const wordsTarget = b.paid > 0 ? b.paid : b.total;
   if (el('receipt-amount-words')) {
-    let wordStr = numberToBengaliWords(wordsTarget);
+    const isEn = window.currentLang === 'en';
+    let wordStr = isEn ? numberToEnglishWords(wordsTarget) : numberToBengaliWords(wordsTarget);
     if (b.paid > 0 && b.due > 0) {
-      wordStr += ` (পরিশোধিত, অবশিষ্ট বকেয়া ৳${(b.due || 0).toLocaleString('en-IN')})`;
+      wordStr += isEn ? ` (Paid, Remaining Due ৳${(b.due || 0).toLocaleString('en-IN')})` : ` (পরিশোধিত, অবশিষ্ট বকেয়া ৳${(b.due || 0).toLocaleString('en-IN')})`;
     } else if (b.advance > 0) {
-      wordStr += ` (পরিশোধিত, অতিরিক্ত জমা ৳${(b.advance || 0).toLocaleString('en-IN')})`;
+      wordStr += isEn ? ` (Paid, Advance Credit ৳${(b.advance || 0).toLocaleString('en-IN')})` : ` (পরিশোধিত, অতিরিক্ত জমা ৳${(b.advance || 0).toLocaleString('en-IN')})`;
     }
     el('receipt-amount-words').textContent = wordStr;
   }

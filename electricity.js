@@ -216,7 +216,7 @@ function renderSubMeters() {
   if (!container) return;
   const meter = ELEC_STATE.mainMeters[ELEC_STATE.activeMeterIdx];
   if (!meter) {
-    container.innerHTML = `<div class="empty-state"><div class="es-icon"><i class="fa-solid fa-bolt"></i></div><p>আগে একটি মেইন মিটার যুক্ত করুন।</p></div>`;
+    container.innerHTML = `<div class="empty-state"><div class="es-icon"><i class="fa-solid fa-bolt"></i></div><p>${typeof t === 'function' ? t('elec_no_meter', 'আগে একটি মেইন মিটার যুক্ত করুন।') : 'আগে একটি মেইন মিটার যুক্ত করুন।'}</p></div>`;
     return;
   }
   const p = getActiveProperty();
@@ -227,36 +227,36 @@ function renderSubMeters() {
     return `
     <div class="submeter-row" data-sub-idx="${i}">
       <div class="form-group" style="margin:0">
-        <label class="form-label">সাব-মিটার নাম</label>
+        <label class="form-label">${typeof t === 'function' ? t('elec_submeter_name', 'সাব-মিটার নাম') : 'সাব-মিটার নাম'}</label>
         <input class="form-control" value="${sm.name}"
           onchange="elecUpdateSubName(${i}, this.value)" placeholder="e.g. Room 201">
       </div>
       <div class="form-group" style="margin:0">
-        <label class="form-label">লিঙ্ক করা রুম</label>
+        <label class="form-label">${typeof t === 'function' ? t('elec_linked_room', 'লিঙ্ক করা রুম') : 'লিঙ্ক করা রুম'}</label>
         <select class="form-control" onchange="elecLinkRoom(${i}, this.value)">
-          <option value="">— নির্বাচন করুন —</option>
-          ${rooms.map(r => `<option value="${r.id}" ${r.id === sm.linkedRoomId ? 'selected' : ''}>রুম ${r.number}${r.tenant ? ` (${r.tenant.name})` : ' (খালি)'}</option>`).join('')}
+          <option value="">${window.currentLang === 'en' ? '— Select Room —' : '— নির্বাচন করুন —'}</option>
+          ${rooms.map(r => `<option value="${r.id}" ${r.id === sm.linkedRoomId ? 'selected' : ''}>${window.currentLang === 'en' ? 'Room' : 'রুম'} ${r.number}${r.tenant ? ` (${r.tenant.name})` : (window.currentLang === 'en' ? ' (Vacant)' : ' (খালি)')}</option>`).join('')}
         </select>
       </div>
       <div class="form-group" style="margin:0">
-        <label class="form-label">আগের রিডিং</label>
+        <label class="form-label">${typeof t === 'function' ? t('elec_prev_reading', 'আগের রিডিং') : 'আগের রিডিং'}</label>
         <input class="form-control" type="number" min="0" step="any" value="${sm.prevReading !== undefined && sm.prevReading !== null ? sm.prevReading : ''}"
           oninput="elecUpdateReading(${i},'prev',this.value,this)" placeholder="0">
       </div>
       <div class="form-group" style="margin:0">
-        <label class="form-label">বর্তমান</label>
+        <label class="form-label">${typeof t === 'function' ? t('elec_curr_reading', 'বর্তমান') : 'বর্তমান'}</label>
         <input class="form-control" type="number" min="0" step="any" value="${sm.currReading !== undefined && sm.currReading !== null ? sm.currReading : ''}"
           oninput="elecUpdateReading(${i},'curr',this.value,this)" placeholder="0">
       </div>
       <div class="form-group" style="margin:0">
-        <label class="form-label">ব্যবহার</label>
+        <label class="form-label">${typeof t === 'function' ? t('elec_units_used', 'ব্যবহার') : 'ব্যবহার'}</label>
         <input class="form-control submeter-units-val" readonly value="${units} unit"
           style="color:var(--amber);font-weight:700">
       </div>
       <button class="btn btn-danger btn-sm btn-icon" onclick="elecRemoveSubMeter(${i})" style="margin-bottom:0.5rem" title="মুছে ফেলুন"><i class="fa-solid fa-trash-can"></i></button>
     </div>`;
   }).join('') +
-  `<button class="btn btn-secondary btn-sm mt-1" onclick="elecAddSubMeter()">+ সাব-মিটার যুক্ত করুন</button>`;
+  `<button class="btn btn-secondary btn-sm mt-1" onclick="elecAddSubMeter()">${typeof t === 'function' ? t('elec_add_submeter', '+ সাব-মিটার যুক্ত করুন') : '+ সাব-মিটার যুক্ত করুন'}</button>`;
 
   renderElecResults(meter);
 }
@@ -288,24 +288,24 @@ function renderElecResults(meter) {
   resultsEl.innerHTML = `
     <div class="elec-result">
       <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem">
-        <div class="rate"><i class="fa-solid fa-chart-simple"></i> প্রতি ইউনিটের রেট: ${fmt(rate)}/unit</div>
+        <div class="rate"><i class="fa-solid fa-chart-simple"></i> ${typeof t === 'function' ? t('elec_rate_per_unit', 'প্রতি ইউনিটের রেট') : 'প্রতি ইউনিটের রেট'}: ${fmt(rate)}/unit</div>
         <div style="font-size:0.75rem;background:rgba(16,185,129,0.15);color:var(--green);padding:0.25rem 0.6rem;border-radius:12px;font-weight:600">
-          <i class="fa-solid fa-check"></i> রুম ও বিলিং-এ স্বয়ংক্রিয়ভাবে সিঙ্ক হয়েছে
+          <i class="fa-solid fa-check"></i> ${typeof t === 'function' ? t('elec_synced_badge', 'রুম ও বিলিং-এ স্বয়ংক্রিয়ভাবে সিঙ্ক হয়েছে') : 'রুম ও বিলিং-এ স্বয়ংক্রিয়ভাবে সিঙ্ক হয়েছে'}
         </div>
       </div>
-      <div style="font-size:0.75rem;color:var(--text-muted);margin:0.3rem 0">মোট বিল ${fmt(totalBill)} ÷ মোট ${totalUnits} unit</div>
+      <div style="font-size:0.75rem;color:var(--text-muted);margin:0.3rem 0">${window.currentLang === 'en' ? `Total Bill ${fmt(totalBill)} ÷ Total ${totalUnits} units` : `মোট বিল ${fmt(totalBill)} ÷ মোট ${totalUnits} unit`}</div>
       <table class="mt-1">
         <thead>
           <tr>
-            <th style="text-align:left;font-size:0.7rem;color:var(--text-muted);padding:0.25rem 0.5rem">সাব-মিটার</th>
-            <th style="text-align:right;font-size:0.7rem;color:var(--text-muted);padding:0.25rem 0.5rem">ইউনিট</th>
-            <th style="text-align:right;font-size:0.7rem;color:var(--text-muted);padding:0.25rem 0.5rem">বিল (৳)</th>
+            <th style="text-align:left;font-size:0.7rem;color:var(--text-muted);padding:0.25rem 0.5rem">${window.currentLang === 'en' ? 'Sub-Meter' : 'সাব-মিটার'}</th>
+            <th style="text-align:right;font-size:0.7rem;color:var(--text-muted);padding:0.25rem 0.5rem">${window.currentLang === 'en' ? 'Units' : 'ইউনিট'}</th>
+            <th style="text-align:right;font-size:0.7rem;color:var(--text-muted);padding:0.25rem 0.5rem">${window.currentLang === 'en' ? 'Bill (৳)' : 'বিল (৳)'}</th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>
       <button class="btn btn-success btn-sm mt-1" onclick="elecPushBills()" style="width:100%;margin-top:0.75rem">
-        <i class="fa-solid fa-arrows-rotate"></i> চলতি মাসের বিলে রিফ্রেশ ও সিঙ্ক করুন
+        <i class="fa-solid fa-arrows-rotate"></i> ${window.currentLang === 'en' ? 'Refresh & Sync to Current Month Bills' : 'চলতি মাসের বিলে রিফ্রেশ ও সিঙ্ক করুন'}
       </button>
     </div>`;
 }

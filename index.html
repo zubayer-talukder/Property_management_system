@@ -17,6 +17,16 @@
       } catch (_) {}
     })();
   </script>
+  <!-- Language Init: Prevent Flash of Wrong Language (FOWL) -->
+  <script>
+    (function initLang() {
+      try {
+        const lang = localStorage.getItem('pms_lang') || 'bn';
+        document.documentElement.setAttribute('lang', lang);
+        window.currentLang = lang;
+      } catch (_) {}
+    })();
+  </script>
   <!-- Strict Auth Guard: Immediately hide body and force login if not authenticated -->
   <style id="auth-guard-style">
     body {
@@ -61,15 +71,20 @@
     <div class="header-brand">
       <div class="logo"><i class="fa-solid fa-building"></i></div>
       <div>
-        <h1>ভাড়া বাড়ি ম্যানেজার</h1>
-        <span>Property Management System</span>
+        <h1 data-i18n="app_title">ভাড়া বাড়ি ম্যানেজার</h1>
+        <span data-i18n="app_subtitle">Property Management System</span>
       </div>
     </div>
 
     <div class="header-actions">
       <!-- Theme Switcher (Light / Bluish) -->
-      <button id="btn-theme-toggle" class="btn btn-secondary btn-icon" title="থিম পরিবর্তন করুন (লাইট / ব্লুইশ)">
+      <button id="btn-theme-toggle" class="btn btn-secondary btn-icon" data-i18n-title="theme_toggle_title" title="থিম পরিবর্তন করুন (লাইট / ব্লুইশ)">
         <i class="fa-solid fa-moon"></i>
+      </button>
+
+      <!-- Language Switcher (Bangla / English) -->
+      <button id="btn-lang-toggle" class="btn btn-secondary btn-sm lang-toggle-btn" data-i18n-title="lang_btn_title" title="Change to English">
+        <i class="fa-solid fa-language"></i> <span id="lang-toggle-text">English</span>
       </button>
 
       <!-- Firebase Status -->
@@ -138,10 +153,10 @@
       <div class="section-header">
         <div class="section-title">
           <div class="icon"><i class="fa-solid fa-city"></i></div>
-          আমার প্রপার্টি
+          <span data-i18n="my_properties">আমার প্রপার্টি</span>
         </div>
         <button id="btn-add-property" class="btn btn-primary">
-          <i class="fa-solid fa-plus"></i> নতুন প্রপার্টি যুক্ত করুন
+          <i class="fa-solid fa-plus"></i> <span data-i18n="add_property_btn">নতুন প্রপার্টি যুক্ত করুন</span>
         </button>
       </div>
       <div id="properties-grid" class="properties-grid"></div>
@@ -154,21 +169,20 @@
 
       <!-- Detail Header -->
       <div class="detail-header">
-        <button class="back-btn" id="btn-back-to-props"><i class="fa-solid fa-arrow-left"></i> ফিরে যান</button>
+        <button class="back-btn" id="btn-back-to-props"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="back_to_props">ফিরে যান</span></button>
         <div class="detail-title">
           <h2 id="detail-prop-name">—</h2>
           <p id="detail-prop-addr"></p>
         </div>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
           <button class="btn btn-secondary btn-sm" id="btn-print-summary" onclick="openLandlordSummaryModal()" title="বাড়িওয়ালার মাসিক ভাড়া ও বকেয়া সামারি প্রিন্ট করুন">
-            <i class="fa-solid fa-file-invoice-dollar"></i> <span>মাসিক সামারি প্রিন্ট</span>
+            <i class="fa-solid fa-file-invoice-dollar"></i> <span data-i18n="print_summary_btn">মাসিক সামারি প্রিন্ট</span>
           </button>
           <button class="btn btn-warning btn-sm" onclick="openOwnerSplit(STATE?.activePropertyId)"
-            id="btn-owner-split"><i class="fa-solid fa-users"></i> Co-Owner Split</button>
-          <button class="btn btn-primary btn-sm" id="btn-add-room"><i class="fa-solid fa-plus"></i> রুম যুক্ত
-            করুন</button>
+            id="btn-owner-split"><i class="fa-solid fa-users"></i> <span data-i18n="owner_split_btn">Co-Owner Split</span></button>
+          <button class="btn btn-primary btn-sm" id="btn-add-room"><i class="fa-solid fa-plus"></i> <span data-i18n="add_room_btn">রুম যুক্ত করুন</span></button>
           <button class="btn btn-success btn-sm" id="btn-add-tenant-top" onclick="openTenantModal(null,'add')" title="যেকোনো রুমে সরাসরি নতুন ভাড়াটিয়া যুক্ত করুন">
-            <i class="fa-solid fa-user-plus"></i> <span>নতুন ভাড়াটিয়া যুক্ত করুন</span>
+            <i class="fa-solid fa-user-plus"></i> <span data-i18n="add_tenant_btn">নতুন ভাড়াটিয়া যুক্ত করুন</span>
           </button>
         </div>
       </div>
@@ -180,56 +194,49 @@
         <span class="month-label" id="detail-month-label">—</span>
         <button class="btn btn-secondary btn-sm btn-icon" id="btn-next-month"><i
             class="fa-solid fa-chevron-right"></i></button>
-        <button class="btn btn-success btn-sm" id="btn-auto-generate"><i class="fa-solid fa-bolt"></i> Auto-Generate
-          বিল</button>
+        <button class="btn btn-success btn-sm" id="btn-auto-generate"><i class="fa-solid fa-bolt"></i> <span data-i18n="auto_generate_btn">Auto-Generate বিল</span></button>
       </div>
 
       <!-- Dashboard Metrics -->
       <div class="metrics-grid">
         <div class="metric-card" style="--metric-color: var(--accent)">
           <div class="mc-icon"><i class="fa-solid fa-house"></i></div>
-          <div class="mc-label">মোট রুম</div>
+          <div class="mc-label" data-i18n="metric_total_rooms">মোট রুম</div>
           <div class="mc-value" id="mc-total-rooms">—</div>
         </div>
         <div class="metric-card" style="--metric-color: var(--green)">
           <div class="mc-icon"><i class="fa-solid fa-circle-check"></i></div>
-          <div class="mc-label">Paid Rooms</div>
+          <div class="mc-label" data-i18n="metric_paid_rooms">পরিশোধিত রুম</div>
           <div class="mc-value" id="mc-paid-rooms">—</div>
-          <div class="mc-sub">পরিশোধিত</div>
         </div>
         <div class="metric-card" style="--metric-color: var(--amber)">
           <div class="mc-icon"><i class="fa-solid fa-clock"></i></div>
-          <div class="mc-label">Due Rooms</div>
+          <div class="mc-label" data-i18n="metric_due_rooms">বকেয়া রুম</div>
           <div class="mc-value" id="mc-due-rooms">—</div>
-          <div class="mc-sub">বকেয়া রুম</div>
         </div>
         <div class="metric-card" style="--metric-color: var(--red)">
           <div class="mc-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
-          <div class="mc-label">Total Due</div>
+          <div class="mc-label" data-i18n="metric_due_amount">মোট বকেয়া</div>
           <div class="mc-value" style="font-size:1.25rem" id="mc-due-amount">—</div>
-          <div class="mc-sub">মোট বকেয়া</div>
         </div>
         <div class="metric-card" style="--metric-color: var(--cyan)">
           <div class="mc-icon"><i class="fa-solid fa-door-open"></i></div>
-          <div class="mc-label">Vacant Rooms</div>
+          <div class="mc-label" data-i18n="metric_vacant_rooms">খালি রুম</div>
           <div class="mc-value" id="mc-vacant-rooms">—</div>
-          <div class="mc-sub">খালি রুম</div>
         </div>
         <div class="metric-card" style="--metric-color: var(--purple)">
           <div class="mc-icon"><i class="fa-solid fa-wallet"></i></div>
-          <div class="mc-label">Expected Rent</div>
+          <div class="mc-label" data-i18n="metric_expected_rent">মোট প্রত্যাশিত</div>
           <div class="mc-value" style="font-size:1.2rem" id="mc-expected-rent">—</div>
-          <div class="mc-sub">মোট প্রত্যাশিত</div>
         </div>
       </div>
 
       <!-- Detail Page Tabs -->
       <div class="tabs">
         <button class="tab-btn active" data-tab-group="detail-tabs" data-tab-target="tab-rooms"
-          onclick="if(window.elecAutoSyncBills)window.elecAutoSyncBills(true)"><i class="fa-solid fa-house"></i> রুম ও
-          বিলিং</button>
+          onclick="if(window.elecAutoSyncBills)window.elecAutoSyncBills(true)"><i class="fa-solid fa-house"></i> <span data-i18n="tab_rooms">রুম ও বিলিং</span></button>
         <button class="tab-btn" data-tab-group="detail-tabs" data-tab-target="tab-electricity"
-          onclick="initElecTab()"><i class="fa-solid fa-bolt"></i> বিদ্যুৎ মিটার</button>
+          onclick="initElecTab()"><i class="fa-solid fa-bolt"></i> <span data-i18n="tab_electricity">বিদ্যুৎ মিটার</span></button>
       </div>
 
       <!-- Tab: Rooms Table -->
@@ -238,14 +245,14 @@
           <table class="rooms-table">
             <thead>
               <tr>
-                <th>রুম নং</th>
-                <th>ভাড়াটিয়া</th>
-                <th>মোট বিল</th>
-                <th>পরিশোধিত</th>
-                <th>বকেয়া</th>
-                <th>স্ট্যাটাস</th>
-                <th>পরিশোধের তারিখ</th>
-                <th>অ্যাকশন</th>
+                <th data-i18n="th_room">রুম নং</th>
+                <th data-i18n="th_tenant">ভাড়াটিয়া</th>
+                <th data-i18n="th_total">মোট বিল</th>
+                <th data-i18n="status_paid">পরিশোধিত</th>
+                <th data-i18n="status_due">বকেয়া</th>
+                <th data-i18n="th_status">স্ট্যাটাস</th>
+                <th data-i18n="lbl_paid_date">পরিশোধের তারিখ</th>
+                <th data-i18n="th_actions">অ্যাকশন</th>
               </tr>
             </thead>
             <tbody id="rooms-tbody"></tbody>
@@ -299,24 +306,24 @@
       <form id="form-property">
         <div class="modal-body">
           <div class="form-group">
-            <label class="form-label">প্রপার্টির নাম *</label>
+            <label class="form-label" data-i18n="prop_name_lbl">প্রপার্টির নাম *</label>
             <input id="prop-name" name="name" class="form-control" placeholder="যেমন: Green Valley Residence" required>
           </div>
           <div class="form-group">
-            <label class="form-label">ঠিকানা *</label>
+            <label class="form-label" data-i18n="prop_addr_lbl">ঠিকানা *</label>
             <input id="prop-address" name="address" class="form-control" placeholder="যেমন: উত্তরা, ঢাকা" required>
           </div>
           <div class="form-group">
-            <label class="form-label">মোট রুম / ফ্ল্যাটের সংখ্যা *</label>
+            <label class="form-label" data-i18n="prop_room_count_lbl">মোট রুম / ফ্ল্যাটের সংখ্যা *</label>
             <input id="prop-room-count" name="roomCount" type="number" min="1" max="200" class="form-control"
               placeholder="যেমন: 10" required>
           </div>
           <div class="form-check mt-1">
             <input type="checkbox" id="chk-multi-owner">
-            <label for="chk-multi-owner"><i class="fa-solid fa-handshake"></i> একাধিক মালিক (Co-Ownership)?</label>
+            <label for="chk-multi-owner"><i class="fa-solid fa-handshake"></i> <span data-i18n="prop_co_owners_chk">একাধিক মালিক (Co-Ownership)?</span></label>
           </div>
           <div id="multi-owners-group" class="form-group mt-1 hidden">
-            <label class="form-label">মালিকদের নাম (প্রতিটি আলাদা লাইনে)</label>
+            <label class="form-label" data-i18n="prop_owners_lbl">মালিকদের নাম (প্রতিটি আলাদা লাইনে)</label>
             <textarea id="prop-owners-input" class="form-control" rows="3"
               placeholder="Zubayer Talukder&#10;Abdullah Al Mamun"></textarea>
             <p style="font-size:0.73rem;color:var(--text-muted);margin-top:0.3rem">পানি ও গ্যাস বিল মালিকদের মধ্যে
@@ -324,8 +331,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-close-modal="modal-property">বাতিল</button>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
+          <button type="button" class="btn btn-secondary" data-close-modal="modal-property" data-i18n="btn_cancel">বাতিল</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">সেভ করুন</span></button>
         </div>
       </form>
     </div>
@@ -342,39 +349,39 @@
         <div class="modal-body">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">রুম নম্বর / পরিচিতি *</label>
+              <label class="form-label" data-i18n="lbl_room_number">রুম নম্বর / পরিচিতি *</label>
               <input id="room-number" name="roomNumber" class="form-control" placeholder="যেমন: 201 বা Flat-A" required>
             </div>
             <div class="form-group">
-              <label class="form-label">মূল ভাড়া (৳) *</label>
+              <label class="form-label" data-i18n="lbl_base_rent">মূল ভাড়া (৳) *</label>
               <input id="room-base-rent" name="baseRent" type="number" min="0" class="form-control" placeholder="15000"
                 required>
             </div>
           </div>
           <div class="form-row-3">
             <div class="form-group">
-              <label class="form-label">পানির বিল (৳)</label>
+              <label class="form-label" data-i18n="lbl_water_charge">পানির বিল (৳)</label>
               <input id="room-water" name="waterBill" type="number" min="0" class="form-control" placeholder="600">
             </div>
             <div class="form-group">
-              <label class="form-label">গ্যাস বিল (৳)</label>
+              <label class="form-label" data-i18n="lbl_gas_charge">গ্যাস বিল (৳)</label>
               <input id="room-gas" name="gasBill" type="number" min="0" class="form-control" placeholder="1080">
             </div>
             <div class="form-group">
-              <label class="form-label">ওয়াইফাই বিল (৳)</label>
+              <label class="form-label" data-i18n="lbl_wifi_charge">ওয়াইফাই বিল (৳)</label>
               <input id="room-wifi" name="wifiBill" type="number" min="0" class="form-control" placeholder="500">
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">অন্যান্য চার্জ (ময়লা, সার্ভিস ইত্যাদি)</label>
+            <label class="form-label" data-i18n="lbl_other_charge">অন্যান্য চার্জ (ময়লা, সার্ভিস ইত্যাদি)</label>
             <input id="room-other" name="otherBill" type="number" min="0" class="form-control" placeholder="200">
           </div>
           <p style="font-size:0.75rem;color:var(--text-muted)"><i class="fa-solid fa-lightbulb"
-              style="color:var(--amber)"></i> বিদ্যুৎ বিল সাব-মিটার ক্যালকুলেটর থেকে স্বয়ংক্রিয়ভাবে আসবে।</p>
+              style="color:var(--amber)"></i> <span data-i18n="elec_sync_notice">বিদ্যুৎ বিল সাব-মিটার হিসাব স্বয়ংক্রিয়ভাবে রুমের মূল বিলের সাথে সমন্বিত থাকে।</span></p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-close-modal="modal-room">বাতিল</button>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> সেভ করুন</button>
+          <button type="button" class="btn btn-secondary" data-close-modal="modal-room" data-i18n="btn_cancel">বাতিল</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save">সেভ করুন</span></button>
         </div>
       </form>
     </div>
@@ -391,35 +398,35 @@
         <div class="modal-body">
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">মূল ভাড়া (৳)</label>
+              <label class="form-label" data-i18n="lbl_base_rent">মূল ভাড়া (৳)</label>
               <input id="bill-rent" type="number" min="0" class="form-control" placeholder="15000">
             </div>
             <div class="form-group">
-              <label class="form-label">বিদ্যুৎ বিল (৳)</label>
+              <label class="form-label" data-i18n="lbl_elec_charge">বিদ্যুৎ বিল (৳)</label>
               <input id="bill-electricity" type="number" min="0" class="form-control" placeholder="সাব-মিটার থেকে">
             </div>
           </div>
           <div class="form-row-3">
             <div class="form-group">
-              <label class="form-label">পানি (৳)</label>
+              <label class="form-label" data-i18n="lbl_water_charge">পানি (৳)</label>
               <input id="bill-water" type="number" min="0" class="form-control">
             </div>
             <div class="form-group">
-              <label class="form-label">গ্যাস (৳)</label>
+              <label class="form-label" data-i18n="lbl_gas_charge">গ্যাস (৳)</label>
               <input id="bill-gas" type="number" min="0" class="form-control">
             </div>
             <div class="form-group">
-              <label class="form-label">ওয়াইফাই (৳)</label>
+              <label class="form-label" data-i18n="lbl_wifi_charge">ওয়াইফাই (৳)</label>
               <input id="bill-wifi" type="number" min="0" class="form-control">
             </div>
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">অন্যান্য চার্জ (৳)</label>
+              <label class="form-label" data-i18n="lbl_other_charge">অন্যান্য চার্জ (৳)</label>
               <input id="bill-other" type="number" min="0" class="form-control" placeholder="200">
             </div>
             <div class="form-group">
-              <label class="form-label">পূর্বের বকেয়া / অতিরিক্ত জমা সমন্বয় (৳)</label>
+              <label class="form-label" data-i18n="lbl_prev_balance">পূর্বের বকেয়া / অতিরিক্ত জমা সমন্বয় (৳)</label>
               <input id="bill-prev-balance" type="number" class="form-control" placeholder="0">
               <div id="bill-prev-balance-hint" style="font-size:0.72rem;color:var(--text-muted);margin-top:0.3rem">
                 বকেয়া হলে (+) এবং অগ্রিম সমন্বয় হলে (-) স্বয়ংক্রিয়ভাবে হিসাব হয়।
@@ -428,12 +435,12 @@
           </div>
           <div class="form-row">
             <div class="form-group">
-              <label class="form-label">পরিশোধিত টাকা (৳)</label>
+              <label class="form-label" data-i18n="lbl_paid_amount">পরিশোধিত টাকা (৳)</label>
               <input id="bill-paid" type="number" min="0" class="form-control"
                 style="border-color:rgba(16,185,129,0.5)">
             </div>
             <div class="form-group">
-              <label class="form-label">পরিশোধের তারিখ</label>
+              <label class="form-label" data-i18n="lbl_paid_date">পরিশোধের তারিখ</label>
               <input id="bill-paid-date" type="date" class="form-control">
             </div>
           </div>
@@ -506,22 +513,22 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="form-label">মন্তব্য / রিমার্কস</label>
+            <label class="form-label" data-i18n="lbl_remarks">মন্তব্য / রিমার্কস</label>
             <textarea id="bill-comment" class="form-control" placeholder="যেকোনো বিশেষ নোট..."></textarea>
           </div>
         </div>
         <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
           <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
             <button type="button" class="btn btn-secondary btn-sm" id="btn-print-receipt"><i
-                class="fa-solid fa-receipt"></i> মানি রিসিট</button>
+                class="fa-solid fa-receipt"></i> <span data-i18n="btn_receipt">মানি রিসিট</span></button>
             <button type="button" class="btn btn-warning btn-sm" id="btn-open-payment-slip"><i
-                class="fa-solid fa-qrcode"></i> বিকাশ QR স্লিপ</button>
+                class="fa-solid fa-qrcode"></i> <span data-i18n="btn_slip">বিকাশ QR স্লিপ</span></button>
             <button type="button" class="btn btn-success btn-sm" id="btn-whatsapp-bill"><i
-                class="fa-brands fa-whatsapp"></i> WhatsApp বিল</button>
+                class="fa-brands fa-whatsapp"></i> <span data-i18n="ps_btn_whatsapp">WhatsApp বিল</span></button>
           </div>
           <div style="display:flex;gap:0.4rem">
-            <button type="button" class="btn btn-secondary" data-close-modal="modal-bill">বাতিল</button>
-            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> বিল সেভ করুন</button>
+            <button type="button" class="btn btn-secondary" data-close-modal="modal-bill" data-i18n="btn_cancel">বাতিল</button>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="btn_save_bill">বিল সেভ করুন</span></button>
           </div>
         </div>
       </form>
@@ -539,8 +546,8 @@
         <div class="receipt-card">
           <!-- Top Title Banner -->
           <div class="receipt-banner">
-            <h3>ভাড়া আদায়ের মানি রিসিট</h3>
-            <p>House Rent Money Receipt & Utility Voucher</p>
+            <h3 data-i18n="receipt_banner_title">ভাড়া আদায়ের মানি রিসিট</h3>
+            <p data-i18n="receipt_banner_sub">House Rent Money Receipt & Utility Voucher</p>
           </div>
 
           <!-- Property & Receipt Metadata Header -->
@@ -580,9 +587,9 @@
           <table class="receipt-table">
             <thead>
               <tr>
-                <th style="width:50px;text-align:center">ক্রম</th>
-                <th style="text-align:left">বিবরণ (Particulars)</th>
-                <th style="text-align:right;width:140px">পরিমাণ (BDT)</th>
+                <th style="width:50px;text-align:center" data-i18n="th_sl">ক্রম</th>
+                <th style="text-align:left" data-i18n="th_particulars">বিবরণ (Particulars)</th>
+                <th style="text-align:right;width:140px" data-i18n="th_amount">পরিমাণ (BDT)</th>
               </tr>
             </thead>
             <tbody id="receipt-breakdown-tbody"></tbody>
@@ -666,14 +673,14 @@
         </div>
       </div>
       <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-        <button type="button" class="btn btn-secondary" data-close-modal="modal-receipt">বন্ধ করুন</button>
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-receipt" data-i18n="btn_close">বন্ধ করুন</button>
         <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
           <button type="button" class="btn btn-warning" id="receipt-btn-open-slip"><i class="fa-solid fa-qrcode"></i>
-            বিকাশ QR স্লিপ</button>
+            <span data-i18n="btn_slip">বিকাশ QR স্লিপ</span></button>
           <button type="button" class="btn btn-success" id="receipt-btn-whatsapp"><i class="fa-brands fa-whatsapp"></i>
-            WhatsApp-এ পাঠান</button>
+            <span data-i18n="ps_btn_whatsapp">WhatsApp-এ পাঠান</span></button>
           <button type="button" class="btn btn-primary" onclick="printReceipt()"><i class="fa-solid fa-print"></i>
-            প্রিন্ট / PDF সেভ করুন</button>
+            <span data-i18n="ps_btn_print_receipt">প্রিন্ট / PDF সেভ করুন</span></button>
         </div>
       </div>
     </div>
@@ -803,12 +810,12 @@
         </div>
       </div>
       <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-        <button type="button" class="btn btn-secondary" data-close-modal="modal-payment-slip">বন্ধ করুন</button>
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-payment-slip" data-i18n="btn_close">বন্ধ করুন</button>
         <div style="display:flex;gap:0.4rem;flex-wrap:wrap">
-          <a id="ps-btn-download-qr" href="assets/bkash-qr-matrix.png" download="payment-qr.png" class="btn btn-outline-pink btn-sm"><i class="fa-solid fa-download"></i> QR ছবি সেভ</a>
-          <button type="button" class="btn btn-outline-pink btn-sm" id="ps-btn-copy-qr" onclick="copyCurrentQrImage()"><i class="fa-solid fa-copy"></i> QR ছবি কপি</button>
-          <button type="button" class="btn btn-success btn-sm" id="ps-btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp-এ পাঠান</button>
-          <button type="button" class="btn btn-primary btn-sm" onclick="printPaymentSlip()"><i class="fa-solid fa-print"></i> স্লিপ প্রিন্ট / PDF</button>
+          <a id="ps-btn-download-qr" href="assets/bkash-qr-matrix.png" download="payment-qr.png" class="btn btn-outline-pink btn-sm"><i class="fa-solid fa-download"></i> <span data-i18n="ps_btn_save_qr">QR ছবি সেভ</span></a>
+          <button type="button" class="btn btn-outline-pink btn-sm" id="ps-btn-copy-qr" onclick="copyCurrentQrImage()"><i class="fa-solid fa-copy"></i> <span data-i18n="ps_btn_copy_qr">QR ছবি কপি</span></button>
+          <button type="button" class="btn btn-success btn-sm" id="ps-btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> <span data-i18n="ps_btn_whatsapp">WhatsApp-এ পাঠান</span></button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="printPaymentSlip()"><i class="fa-solid fa-print"></i> <span data-i18n="ps_btn_print_pdf">স্লিপ প্রিন্ট / PDF</span></button>
         </div>
       </div>
     </div>
@@ -922,10 +929,10 @@
         </div>
       </div>
       <div class="modal-footer" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem">
-        <button type="button" class="btn btn-secondary" data-close-modal="modal-landlord-summary">বন্ধ করুন</button>
+        <button type="button" class="btn btn-secondary" data-close-modal="modal-landlord-summary" data-i18n="btn_close">বন্ধ করুন</button>
         <div style="display:flex;gap:0.5rem">
-          <button type="button" class="btn btn-secondary" id="lss-btn-copy-wa" onclick="copyLandlordSummaryForWA()"><i class="fa-solid fa-copy"></i> হোয়াটসঅ্যাপ সামারি কপি</button>
-          <button type="button" class="btn btn-primary" onclick="printLandlordSummary()"><i class="fa-solid fa-print"></i> সামারি শিট প্রিন্ট / PDF</button>
+          <button type="button" class="btn btn-secondary" id="lss-btn-copy-wa" onclick="copyLandlordSummaryForWA()"><i class="fa-solid fa-copy"></i> <span data-i18n="summary_btn_copy_wa">হোয়াটসঅ্যাপ সামারি কপি</span></button>
+          <button type="button" class="btn btn-primary" onclick="printLandlordSummary()"><i class="fa-solid fa-print"></i> <span data-i18n="summary_btn_print">সামারি শিট প্রিন্ট / PDF</span></button>
         </div>
       </div>
     </div>
@@ -947,11 +954,11 @@
           <!-- Tabs -->
           <div class="tabs">
             <button type="button" class="tab-btn active" data-tab-group="tenant-tabs"
-              data-tab-target="tenant-tab-personal"><i class="fa-solid fa-user"></i> ব্যক্তিগত ও পরিবার</button>
+              data-tab-target="tenant-tab-personal"><i class="fa-solid fa-user"></i> <span data-i18n="kyc_tab_personal">ব্যক্তিগত ও পরিবার</span></button>
             <button type="button" class="tab-btn" data-tab-group="tenant-tabs" data-tab-target="tenant-tab-nid"><i
-                class="fa-solid fa-id-card"></i> NID ও ছবি</button>
+                class="fa-solid fa-id-card"></i> <span data-i18n="kyc_tab_docs">NID ও ছবি</span></button>
             <button type="button" class="tab-btn" data-tab-group="tenant-tabs" data-tab-target="tenant-tab-emergency"><i
-                class="fa-solid fa-phone-volume"></i> জরুরি ও লিজ</button>
+                class="fa-solid fa-phone-volume"></i> <span data-i18n="kyc_tab_lease">জরুরি ও লিজ</span></button>
           </div>
 
           <!-- Tab 1: Personal -->
@@ -1127,9 +1134,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-close-modal="modal-tenant">বাতিল</button>
-          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> তথ্য সংরক্ষণ
-            করুন</button>
+          <button type="button" class="btn btn-secondary" data-close-modal="modal-tenant" data-i18n="btn_cancel">বাতিল</button>
+          <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> <span data-i18n="kyc_btn_save">তথ্য সংরক্ষণ করুন</span></button>
         </div>
       </form>
     </div>
@@ -1187,7 +1193,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" data-close-modal="modal-split">বন্ধ করুন</button>
+        <button class="btn btn-secondary" data-close-modal="modal-split" data-i18n="btn_close">বন্ধ করুন</button>
       </div>
     </div>
   </div>
@@ -1202,6 +1208,7 @@
 ═══════════════════════════════════════════════════════ -->
   <script src="firebase-config.js?v=2.2"></script>
   <script src="js/core.js?v=2.2"></script>
+  <script src="js/i18n.js?v=2.3"></script>
   <script src="js/theme.js?v=2.2"></script>
   <script src="js/backup.js?v=2.2"></script>
   <script src="js/demo-data.js?v=2.2"></script>

@@ -17,7 +17,15 @@ function yyyymm(d) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 function monthLabel(ym) {
+  if (!ym) return '';
   const [y, m] = ym.split('-').map(Number);
+  const lang = window.currentLang || (localStorage.getItem('pms_lang') || 'bn');
+  if (lang === 'bn') {
+    const bnMonths = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+    const bnDigits = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+    const yStr = String(y).split('').map(d => bnDigits[d] || d).join('');
+    return `${bnMonths[m - 1]} ${yStr}`;
+  }
   return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 }
 function prevMonth(ym) {
